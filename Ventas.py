@@ -425,7 +425,7 @@ class Ventana(tb.Window):
 
         except:
             #Mensaje si ocurre algun error
-            messagebox.showerror("Lista de Productos", "Ocurrio un error al mostrar la lista de productos")
+            messagebox.showerror("Lista de Productos", "Ocurrio un error al mostrar la lista de productos")   
     def ventana_lista_productos(self):
         self.frame_lista_productos=Frame(self.frame_center)
         self.frame_lista_productos.grid(row=0,column=0,columnspan=2,sticky=NSEW)
@@ -436,7 +436,7 @@ class Ventana(tb.Window):
         btn_nuevo_producto=tb.Button(self.lblframe_botones_listprod,text='Nuevo',width=21
                                     ,bootstyle="success",command=self.ventana_nuevo_producto)
         btn_nuevo_producto.grid(row=0,column=0,padx=5,pady=5)
-        btn_modificar_producto=tb.Button(self.lblframe_botones_listprod,text='Modificar',width=21,bootstyle="warning")
+        btn_modificar_producto=tb.Button(self.lblframe_botones_listprod,text='Modificar',width=21,bootstyle="warning",command=self.ventana_modificar_producto)
         btn_modificar_producto.grid(row=0,column=1,padx=5,pady=5)
         btn_eliminar_producto=tb.Button(self.lblframe_botones_listprod,text='Eliminar',width=21,bootstyle="danger",command=self.eliminar_producto)
         btn_eliminar_producto.grid(row=0,column=2,padx=5,pady=5)   
@@ -541,6 +541,14 @@ class Ventana(tb.Window):
         coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
         coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
         self.frame_nuevo_producto.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
+    def centrar_ventana_modificar_producto(self,ancho,alto):
+        ventana_ancho=ancho
+        ventana_alto=alto
+        pantalla_ancho=self.frame_rigth.winfo_screenwidth()
+        pantalla_alto=self.frame_rigth.winfo_screenheight()
+        coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
+        coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
+        self.frame_modificar_producto.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
     def guardar_producto(self):
         #Valida que no queden vacios los campos
         if self.txt_codigo_nuevo_producto.get()=="" or self.txt_nombre_nuevo_producto.get()=="" or self.txt_cantidad_nuevo_producto.get()=="" or self.txt_proveedor_nuevo_producto.get()=="" or self.txt_preciodecosto_nuevo_producto.get()=="" or self.txt_fechaderecepcion_nuevo_producto.get()=="" or self.txt_preciodeventa_nuevo_producto.get()=="":
@@ -614,8 +622,113 @@ class Ventana(tb.Window):
         except:
             #Mensaje si ocurre algun error
             messagebox.showerror("Busqueda de productos", "Ocurrio un error al buscar en la lista de productos")
+    def ventana_modificar_producto(self):
+
+        self.producto_seleccionado=self.tree_lista_productos.focus()
+        self.val_mod_prod=self.tree_lista_productos.item(self.producto_seleccionado,'values')
+        if self.val_mod_prod!='':
+
+           self.frame_modificar_producto=Toplevel(self)
+           self.frame_modificar_producto.title('Modificar Producto')
+           self.centrar_ventana_modificar_producto(542,450)
+           self.frame_modificar_producto.resizable(0,0)
+           self.frame_modificar_producto.grab_set()
+
+           lblframe_modificar_producto=LabelFrame(self.frame_modificar_producto)
+           lblframe_modificar_producto.grid(row=0,column=0,sticky=NSEW,padx=10,pady=10)
+
+           lbl_codigo_modificar_producto=Label(lblframe_modificar_producto,text='Codigo')
+           lbl_codigo_modificar_producto.grid(row=0,column=0,padx=10,pady=10)
+           self.txt_codigo_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_codigo_modificar_producto.grid(row=0,column=1,padx=10,pady=10)
+
+           lbl_nombre_modificar_producto=Label(lblframe_modificar_producto,text='Nombre')
+           lbl_nombre_modificar_producto.grid(row=1,column=0,padx=10,pady=10)
+           self.txt_nombre_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_nombre_modificar_producto.grid(row=1,column=1,padx=10,pady=10)
+
+           lbl_cantidad_modificar_producto=Label(lblframe_modificar_producto,text='Cantidad')
+           lbl_cantidad_modificar_producto.grid(row=2,column=0,padx=10,pady=10)
+           self.txt_cantidad_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_cantidad_modificar_producto.grid(row=2,column=1,padx=10,pady=10)
+
+           lbl_talla_modificar_producto=Label(lblframe_modificar_producto,text='Talla')
+           lbl_talla_modificar_producto.grid(row=7,column=0,padx=10,pady=10)
+           self.txt_talla_modificar_producto=ttk.Combobox(lblframe_modificar_producto,values=('2','4','6','8','10','12','14','16','18','S','M','L','XL','XXL'),width=38,state='readonly')
+           self.txt_talla_modificar_producto.grid(row=7,column=1,padx=10,pady=10)
+           self.txt_talla_modificar_producto.current(0)
+
+           lbl_proveedor_modificar_producto=Label(lblframe_modificar_producto,text='Proveedor')
+           lbl_proveedor_modificar_producto.grid(row=3,column=0,padx=10,pady=10)
+           self.txt_proveedor_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_proveedor_modificar_producto.grid(row=3,column=1,padx=10,pady=10)
+
+           lbl_preciodecosto_modificar_producto=Label(lblframe_modificar_producto,text='Precio de Costo')
+           lbl_preciodecosto_modificar_producto.grid(row=4,column=0,padx=10,pady=10)
+           self.txt_preciodecosto_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_preciodecosto_modificar_producto.grid(row=4,column=1,padx=10,pady=10)
+   
+           lbl_fechaderecepcion_modificar_producto=Label(lblframe_modificar_producto,text='Fecha de Recepcion')
+           lbl_fechaderecepcion_modificar_producto.grid(row=5,column=0,padx=10,pady=10)
+           self.txt_fechaderecepcion_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_fechaderecepcion_modificar_producto.grid(row=5,column=1,padx=10,pady=10)
+
+           lbl_preciodeventa_modificar_producto=Label(lblframe_modificar_producto,text='Precio de Venta')
+           lbl_preciodeventa_modificar_producto.grid(row=6,column=0,padx=10,pady=10)
+           self.txt_preciodeventa_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_preciodeventa_modificar_producto.grid(row=6,column=1,padx=10,pady=10)
 
 
+           btn_guardar_modificar_producto=ttk.Button(lblframe_modificar_producto,text='Modificar',width=38,bootstyle='warning',command=self.modificar_producto)
+           btn_guardar_modificar_producto.grid(row=8,column=1,padx=10,pady=10)
+
+           self.llenar_entrys_modificar_producto()     
+    def llenar_entrys_modificar_producto(self):
+        #Se limpian todos los entrys
+        self.txt_codigo_modificar_producto.delete(0,END)
+        self.txt_nombre_modificar_producto.delete(0,END)
+        self.txt_cantidad_modificar_producto.delete(0,END)
+        self.txt_talla_modificar_producto.delete(0,END)
+        self.txt_proveedor_modificar_producto.delete(0,END)
+        self.txt_preciodecosto_modificar_producto.delete(0,END)
+        self.txt_fechaderecepcion_modificar_producto.delete(0,END)
+        self.txt_preciodeventa_modificar_producto.delete(0,END)
+        #Se llenan los entrys
+        self.txt_codigo_modificar_producto.insert(0,self.val_mod_prod[0])
+        self.txt_nombre_modificar_producto.insert(0,self.val_mod_prod[1])
+        self.txt_cantidad_modificar_producto.insert(0,self.val_mod_prod[2])
+        self.txt_talla_modificar_producto.insert(0,self.val_mod_prod[3])
+        self.txt_proveedor_modificar_producto.insert(0,self.val_mod_prod[4])
+        self.txt_preciodecosto_modificar_producto.insert(0,self.val_mod_prod[5])
+        self.txt_fechaderecepcion_modificar_producto.insert(0,self.val_mod_prod[6])
+        self.txt_preciodeventa_modificar_producto.insert(0,self.val_mod_prod[7])
+    def modificar_producto(self):
+        #Valida que no queden vacios los campos
+        if self.txt_codigo_modificar_producto.get()=="" or self.txt_nombre_modificar_producto.get()=="" or self.txt_cantidad_modificar_producto.get()=="" or self.txt_proveedor_modificar_producto.get()=="" or self.txt_preciodecosto_modificar_producto.get()=="" or self.txt_fechaderecepcion_modificar_producto.get()=="" or self.txt_preciodeventa_modificar_producto.get()=="":
+            messagebox.showwarning("Modificar Producto","Algun campo no es valido, por favor revise")
+            return
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            
+            datos_modificar_producto=self.txt_nombre_modificar_producto.get(),self.txt_cantidad_modificar_producto.get(),self.txt_talla_modificar_producto.get()
+            #Se consulta la base de datos
+            miCursor.execute("UPDATE Productos SET nombre=?,cantidad=?,talla=?,proveedor=?,preciodecosto=?,fechaderecepcion=?,preciodeventa=? WHERE Codigo="+self.txt_codigo_modificar_producto.get(),(datos_modificar_producto))
+            messagebox.showinfo('Modificar Producto',"Producto Modificado Correctamente")
+            #se aplican cambios
+            miConexion.commit()
+            self.val_mod_prod=self.tree_lista_productos.item(self.producto_seleccionado,text='',values=(self.txt_codigo_modificar_producto.get(),self.txt_nombre_modificar_producto.get(),self.txt_cantidad_modificar_producto.get(),self.txt_proveedor_modificar_producto.get(),self.txt_preciodecosto_modificar_producto.get(),self.txt_fechaderecepcion_modificar_producto.get(),self.txt_preciodeventa_modificar_producto.get(),))
+            self.frame_modificar_producto.destroy()#Se cierra la ventana guardar nuevo usuario
+            #self.ventana_lista_productos()#Se carga nuevamente la ventana de usuarios para ver los cambios
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Modificar Producto", "Ocurrio un error al Modificar el Producto")
 
 
 def main():
