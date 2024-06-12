@@ -34,7 +34,7 @@ class Ventana(tb.Window):
         self.frame_rigth=Frame(self,width=400)
         self.frame_rigth.grid(row=0,column=2,sticky=NSEW)
 
-        btn_productos=ttk.Button(self.frame_left,text='Productos',bootstyle='info',width=15)
+        btn_productos=ttk.Button(self.frame_left,text='Productos',bootstyle='info',width=15,command=self.ventana_lista_productos)
         btn_productos.grid(row=0,column=0,padx=10,pady=10)
         btn_ventas=ttk.Button(self.frame_left,text='Ventas',bootstyle='info',width=15)
         btn_ventas.grid(row=1,column=0,padx=10,pady=10)
@@ -395,6 +395,227 @@ class Ventana(tb.Window):
             miConexion.commit()
             #Se cierra la conexion
             miConexion.close()
+
+#===============================PRODUCTOS================================
+
+    def mostrar_productos(self):
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            #Se limpia el treeview
+            registros=self.tree_lista_productos.get_children()
+            #Se recorre cada regristro
+            for elementos in registros:
+                self.tree_lista_productos.delete(elementos)
+            #Se consulta la base de datos
+            miCursor.execute("SELECT * FROM Productos")
+            #Con esto se traen todos los registros y se guardan en "datos"
+            datos=miCursor.fetchall()
+            #Se recorre cada fila encontrada
+            for row in datos:
+                #Se llena el treeview
+                self.tree_lista_productos.insert("",0,text=row[0],values=(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7]))
+            #se aplicand cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Lista de Productos", "Ocurrio un error al mostrar la lista de productos")
+    def ventana_lista_productos(self):
+        self.frame_lista_productos=Frame(self.frame_center)
+        self.frame_lista_productos.grid(row=0,column=0,columnspan=2,sticky=NSEW)
+
+        self.lblframe_botones_listprod=LabelFrame(self.frame_lista_productos)
+        self.lblframe_botones_listprod.grid(row=0,column=0,padx=10,pady=10,sticky=NSEW)
+
+        btn_nuevo_producto=tb.Button(self.lblframe_botones_listprod,text='Nuevo',width=21
+                                    ,bootstyle="success",command=self.ventana_nuevo_producto)
+        btn_nuevo_producto.grid(row=0,column=0,padx=5,pady=5)
+        btn_modificar_producto=tb.Button(self.lblframe_botones_listprod,text='Modificar',width=21,bootstyle="warning")
+        btn_modificar_producto.grid(row=0,column=1,padx=5,pady=5)
+        btn_eliminar_producto=tb.Button(self.lblframe_botones_listprod,text='Eliminar',width=21,bootstyle="danger",command=self.eliminar_producto)
+        btn_eliminar_producto.grid(row=0,column=2,padx=5,pady=5)   
+
+        self.lblframe_busqueda_listprod=LabelFrame(self.frame_lista_productos)
+        self.lblframe_busqueda_listprod.grid(row=1,column=0,padx=10,pady=10,sticky=NSEW) 
+
+        self.txt_busqueda_producto=ttk.Entry(self.lblframe_busqueda_listprod,width=172)
+        self.txt_busqueda_producto.grid(row=0,column=0,padx=5,pady=5)  
+        self.txt_busqueda_producto.bind('<Key>',self.buscar_producto)                       
+
+        #========================Treeview=====================================
+        
+        self.lblframe_tree_listprod=LabelFrame(self.frame_lista_productos)
+        self.lblframe_tree_listprod.grid(row=2,column=0,padx=10,pady=10,sticky=NSEW)
+
+        columnas=("codigo","nombre","cantidad","talla","proveedor","preciodecosto","fechaderecepcion","preciodeventa")
+
+        self.tree_lista_productos=tb.Treeview(self.lblframe_tree_listprod,columns=columnas,
+                                         height=17,show='headings',bootstyle="dark")
+        self.tree_lista_productos.grid(row=0,column=0)
+        
+        self.tree_lista_productos.heading("codigo",text="Codigo",anchor=W)
+        self.tree_lista_productos.heading("nombre",text="Nombre",anchor=W)
+        self.tree_lista_productos.heading("cantidad",text="Clave",anchor=W)
+        self.tree_lista_productos.heading("talla",text="Talla",anchor=W) 
+        self.tree_lista_productos.heading("proveedor",text="Proovedor",anchor=W)
+        self.tree_lista_productos.heading("preciodecosto",text="Precio de costo",anchor=W)
+        self.tree_lista_productos.heading("fechaderecepcion",text="Fecha de recepcion",anchor=W)
+        self.tree_lista_productos.heading("preciodeventa",text="Precio de venta",anchor=W)
+
+        self.tree_lista_productos['displaycolumns']=("codigo","nombre","talla","proveedor","preciodecosto","fechaderecepcion","preciodeventa")#esto es para ocultar la clave
+
+        #scrollbar
+        tree_scroll_listaprod=tb.Scrollbar(self.frame_lista_productos,bootstyle='round-success')
+        tree_scroll_listaprod.grid(row=2,column=1,padx=5,pady=10)
+        #Configuracion del scrollbar
+        tree_scroll_listaprod.config(command=self.tree_lista_productos.yview)
+
+        #Se llama a la funcion mostrar usuarios
+        self.mostrar_productos()      
+    def ventana_nuevo_producto(self):
+
+        self.frame_nuevo_producto=Toplevel(self)
+        self.frame_nuevo_producto.title('Nuevo Producto')
+        self.centrar_ventana_nuevo_producto(542,450)
+        self.frame_nuevo_producto.resizable(0,0)
+        self.frame_nuevo_producto.grab_set()
+
+        lblframe_nuevo_producto=LabelFrame(self.frame_nuevo_producto)
+        lblframe_nuevo_producto.grid(row=0,column=0,sticky=NSEW,padx=10,pady=10)
+
+        lbl_codigo_nuevo_producto=Label(lblframe_nuevo_producto,text='Codigo')
+        lbl_codigo_nuevo_producto.grid(row=0,column=0,padx=10,pady=10)
+        self.txt_codigo_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_codigo_nuevo_producto.grid(row=0,column=1,padx=10,pady=10)
+
+        lbl_nombre_nuevo_producto=Label(lblframe_nuevo_producto,text='Nombre')
+        lbl_nombre_nuevo_producto.grid(row=1,column=0,padx=10,pady=10)
+        self.txt_nombre_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_nombre_nuevo_producto.grid(row=1,column=1,padx=10,pady=10)
+
+        lbl_cantidad_nuevo_producto=Label(lblframe_nuevo_producto,text='Cantidad')
+        lbl_cantidad_nuevo_producto.grid(row=2,column=0,padx=10,pady=10)
+        self.txt_cantidad_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_cantidad_nuevo_producto.grid(row=2,column=1,padx=10,pady=10)
+
+        lbl_talla_nuevo_producto=Label(lblframe_nuevo_producto,text='Talla')
+        lbl_talla_nuevo_producto.grid(row=7,column=0,padx=10,pady=10)
+        self.txt_talla_nuevo_producto=ttk.Combobox(lblframe_nuevo_producto,values=('2','4','6','8','10','12','14','16','18','S','M','L','XL','XXL'),width=38,state='readonly')
+        self.txt_talla_nuevo_producto.grid(row=7,column=1,padx=10,pady=10)
+        self.txt_talla_nuevo_producto.current(0)
+
+        lbl_proveedor_nuevo_producto=Label(lblframe_nuevo_producto,text='Proveedor')
+        lbl_proveedor_nuevo_producto.grid(row=3,column=0,padx=10,pady=10)
+        self.txt_proveedor_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_proveedor_nuevo_producto.grid(row=3,column=1,padx=10,pady=10)
+
+        lbl_preciodecosto_nuevo_producto=Label(lblframe_nuevo_producto,text='Precio de Costo')
+        lbl_preciodecosto_nuevo_producto.grid(row=4,column=0,padx=10,pady=10)
+        self.txt_preciodecosto_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_preciodecosto_nuevo_producto.grid(row=4,column=1,padx=10,pady=10)
+
+        lbl_fechaderecepcion_nuevo_producto=Label(lblframe_nuevo_producto,text='Fecha de Recepcion')
+        lbl_fechaderecepcion_nuevo_producto.grid(row=5,column=0,padx=10,pady=10)
+        self.txt_fechaderecepcion_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_fechaderecepcion_nuevo_producto.grid(row=5,column=1,padx=10,pady=10)
+
+        lbl_preciodeventa_nuevo_producto=Label(lblframe_nuevo_producto,text='Precio de Venta')
+        lbl_preciodeventa_nuevo_producto.grid(row=6,column=0,padx=10,pady=10)
+        self.txt_preciodeventa_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_preciodeventa_nuevo_producto.grid(row=6,column=1,padx=10,pady=10)
+
+
+        btn_guardar_nuevo_producto=ttk.Button(lblframe_nuevo_producto,text='Guardar',width=38,bootstyle='success',command=self.guardar_producto)
+        btn_guardar_nuevo_producto.grid(row=8,column=1,padx=10,pady=10)
+    def centrar_ventana_nuevo_producto(self,ancho,alto):
+        ventana_ancho=ancho
+        ventana_alto=alto
+        pantalla_ancho=self.frame_rigth.winfo_screenwidth()
+        pantalla_alto=self.frame_rigth.winfo_screenheight()
+        coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
+        coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
+        self.frame_nuevo_producto.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
+    def guardar_producto(self):
+        #Valida que no queden vacios los campos
+        if self.txt_codigo_nuevo_producto.get()=="" or self.txt_nombre_nuevo_producto.get()=="" or self.txt_cantidad_nuevo_producto.get()=="" or self.txt_proveedor_nuevo_producto.get()=="" or self.txt_preciodecosto_nuevo_producto.get()=="" or self.txt_fechaderecepcion_nuevo_producto.get()=="" or self.txt_preciodeventa_nuevo_producto.get()=="":
+            messagebox.showwarning("Guardando Producto","Algun campo no es valido, por favor revise")
+            return
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            
+            datos_guardar_producto=self.txt_codigo_nuevo_producto.get(),self.txt_nombre_nuevo_producto.get(),self.txt_cantidad_nuevo_producto.get(),self.txt_talla_nuevo_producto.get(),self.txt_proveedor_nuevo_producto.get(),self.txt_preciodecosto_nuevo_producto.get(),self.txt_fechaderecepcion_nuevo_producto.get(),self.txt_preciodeventa_nuevo_producto.get()
+            #Se consulta la base de datos
+            miCursor.execute("INSERT INTO Productos VALUES(?,?,?,?,?,?,?,?)",(datos_guardar_producto))
+            messagebox.showinfo('Guardando Producto',"Producto Guardado Correctamente")
+            #se aplican cambios
+            miConexion.commit()
+            self.frame_nuevo_producto.destroy()
+            self.ventana_lista_productos()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Guardando Productos", "Ocurrio un error al Guardar el Producto")
+    def eliminar_producto(self):
+        self.producto_seleccionado_eliminar=self.tree_lista_productos.focus()
+        self.val_elm_prod = self.tree_lista_productos.item(self.producto_seleccionado_eliminar, 'values')
+
+        try:
+            if self.val_elm_prod!= '':
+                respuesta = messagebox.askquestion('Eliminando Producto', '¿Está seguro de eliminar el producto seleccionado?')
+                if respuesta == 'yes':
+                    miConexion = sqlite3.connect('Ventas.db')
+                    miCursor = miConexion.cursor()
+                    miCursor.execute("DELETE FROM Productos WHERE Codigo="+ str(self.val_elm_prod[0]))
+                    miConexion.commit()
+                    messagebox.showinfo('Eliminando Producto', 'Registro Eliminado Correctamente')
+                    self.mostrar_productos()
+                    miConexion.close()
+                else:
+                    messagebox.showerror('Eliminando Producto', 'Eliminación Cancelada')
+        except:
+            messagebox.showerror('Eliminando Producto','Ocurrió un error')
+    def buscar_producto(self,event):
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            #Se limpia el treeview
+            registros=self.tree_lista_productos.get_children()
+            #Se recorre cada regristro
+            for elementos in registros:
+                self.tree_lista_productos.delete(elementos)
+            #Se consulta la base de datos
+            miCursor.execute("SELECT * FROM Productos WHERE Nombre LIKE ?",(self.txt_busqueda_producto.get() + '%',) )
+            #Con esto se traen todos los registros y se guardan en "datos"
+            datos=miCursor.fetchall()
+            #Se recorre cada fila encontrada
+            for row in datos:
+                #Se llena el treeview
+                self.tree_lista_productos.insert("",0,text=row[0],values=(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],))
+            #se aplicand cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Busqueda de productos", "Ocurrio un error al buscar en la lista de productos")
+
+
 
 
 def main():
