@@ -766,8 +766,6 @@ class Ventana(tb.Window):
         btn_cobrar=tb.Button(self.lblframe_botones_detalle_venta,text='Cobrar',width=12,command=self.ventana_contado)
         btn_cobrar.grid(row=0,column=4,padx=5)
 
-        btn_credito=tb.Button(self.lblframe_botones_detalle_venta,text='Credito',width=12)
-        btn_credito.grid(row=0,column=5,padx=5)
 
         self.busqueda_codigo()
         self.busqueda_nombre()               
