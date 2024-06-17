@@ -1,7 +1,9 @@
 from tkinter import*
 from tkinter import ttk,messagebox
 import ttkbootstrap as tb
+from ttkbootstrap.scrolled import ScrolledFrame
 import sqlite3
+from datetime import datetime
 
 class Ventana(tb.Window):
     def __init__(self):
@@ -28,21 +30,24 @@ class Ventana(tb.Window):
         btn_acceso.pack(padx=10,pady=10)
     def ventana_menu(self):
         self.frame_left=Frame(self,width=200)
-        self.frame_left.grid(row=0,column=0,sticky=NS)
+        self.frame_left.grid(row=0,column=0,sticky=NSEW)
+
         self.frame_center=Frame(self)
         self.frame_center.grid(row=0,column=1,sticky=NSEW)
-        self.frame_rigth=Frame(self,width=400)
-        self.frame_rigth.grid(row=0,column=2,sticky=NSEW)
+        #self.frame_rigth=Frame(self,width=400)
+        #self.frame_rigth.grid(row=0,column=2,sticky=NSEW)
+        
+        self.ventana_busqueda_detalle_venta()
 
-        btn_productos=ttk.Button(self.frame_left,text='Productos',bootstyle='info',width=15,command=self.ventana_lista_productos)
+        btn_productos=ttk.Button(self.frame_left,text='Productos',bootstyle='info',width=17,command=self.ventana_lista_productos)
         btn_productos.grid(row=0,column=0,padx=10,pady=10)
-        btn_ventas=ttk.Button(self.frame_left,text='Ventas',bootstyle='info',width=15)
+        btn_ventas=ttk.Button(self.frame_left,text='Ventas',bootstyle='info',width=17,command=self.ventana_detalle_ventas)
         btn_ventas.grid(row=1,column=0,padx=10,pady=10)
-        btn_clientes=ttk.Button(self.frame_left,text='Clientes',bootstyle='info',width=15)
+        btn_clientes=ttk.Button(self.frame_left,text='Clientes',bootstyle='info',width=17)
         btn_clientes.grid(row=2,column=0,padx=10,pady=10)
         #btn_compras=ttk.Button(self.frame_left,text='Compras',bootstyle='info',width=15)
         #btn_compras.grid(row=3,column=0,padx=10,pady=10)
-        btn_usuarios=ttk.Button(self.frame_left,text='Usuarios',bootstyle='info',width=15,command=self.ventana_lista_usuarios)
+        btn_usuarios=ttk.Button(self.frame_left,text='Usuarios',bootstyle='info',width=17,command=self.ventana_lista_usuarios)
         btn_usuarios.grid(row=4,column=0,padx=10,pady=10)
         #btn_reportes=ttk.Button(self.frame_left,text='Reportes',bootstyle='info',width=15)
         #btn_reportes.grid(row=5,column=0,padx=10,pady=10)
@@ -52,11 +57,11 @@ class Ventana(tb.Window):
         #btn_restaurabd.grid(row=7,column=0,padx=10,pady=10)
 
         
-        lbl2=Label(self.frame_center)
-        lbl2.grid(row=0,column=0,padx=10,pady=10)
+        #lbl2=Label(self.frame_center)
+        #lbl2.grid(row=0,column=0,padx=10,pady=10)
 
-        lbl3=Label(self.frame_rigth)
-        lbl3.grid(row=0,column=0,padx=10,pady=10)
+        #lbl3=Label(self.frame_rigth)
+        #lbl3.grid(row=0,column=0,padx=10,pady=10)
     def logueo(self):
         #Capturador de errores
         try:
@@ -74,11 +79,11 @@ class Ventana(tb.Window):
             datos_logueo=miCursor.fetchall()
             if datos_logueo!="":
                 for row in datos_logueo:
-                    cod_usu=row[0]
-                    nom_usu=row[1]
+                    self.cod_usu=row[0]
+                    self.nom_usu=row[1]
                     cla_usu=row[2]
                     rol_usu=row[3]
-                if(nom_usu==self.txt_usuario.get() and cla_usu==self.txt_clave.get()):
+                if(self.nom_usu==self.txt_usuario.get() and cla_usu==self.txt_clave.get()):
                     self.frame_login.pack_forget()#Aqui se oculta la ventana login
                     self.ventana_menu()#Aqui se abre la nueva ventana menu
 
@@ -91,6 +96,7 @@ class Ventana(tb.Window):
             #Mensaje si ocurre algun error
             messagebox.showerror("Acceso", "El usuario o clave son incorrectos")
     def ventana_lista_usuarios(self):
+        self.borrar_frames()
         self.frame_lista_usuarios=Frame(self.frame_center)
         self.frame_lista_usuarios.grid(row=0,column=0,columnspan=2,sticky=NSEW)
 
@@ -233,16 +239,16 @@ class Ventana(tb.Window):
     def centrar_ventana_nuevo_usuario(self,ancho,alto):
         ventana_ancho=ancho
         ventana_alto=alto
-        pantalla_ancho=self.frame_rigth.winfo_screenwidth()
-        pantalla_alto=self.frame_rigth.winfo_screenheight()
+        pantalla_ancho=self.winfo_screenwidth()
+        pantalla_alto=self.winfo_screenheight()
         coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
         coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
         self.frame_nuevo_usuario.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
     def centrar_ventana_modificar_usuario(self,ancho,alto):
         ventana_ancho=ancho
         ventana_alto=alto
-        pantalla_ancho=self.frame_rigth.winfo_screenwidth()
-        pantalla_alto=self.frame_rigth.winfo_screenheight()
+        pantalla_ancho=self.winfo_screenwidth()
+        pantalla_alto=self.winfo_screenheight()
         coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
         coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
         self.frame_modificar_usuario.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
@@ -427,6 +433,7 @@ class Ventana(tb.Window):
             #Mensaje si ocurre algun error
             messagebox.showerror("Lista de Productos", "Ocurrio un error al mostrar la lista de productos")   
     def ventana_lista_productos(self):
+        self.borrar_frames()
         self.frame_lista_productos=Frame(self.frame_center)
         self.frame_lista_productos.grid(row=0,column=0,columnspan=2,sticky=NSEW)
 
@@ -446,14 +453,14 @@ class Ventana(tb.Window):
 
         self.txt_busqueda_producto=ttk.Entry(self.lblframe_busqueda_listprod,width=172)
         self.txt_busqueda_producto.grid(row=0,column=0,padx=5,pady=5)  
-        self.txt_busqueda_producto.bind('<Key>',self.buscar_producto)                       
+        self.txt_busqueda_producto.bind('<KeyRelease>',self.buscar_producto)                       
 
         #========================Treeview=====================================
         
         self.lblframe_tree_listprod=LabelFrame(self.frame_lista_productos)
         self.lblframe_tree_listprod.grid(row=2,column=0,padx=10,pady=10,sticky=NSEW)
 
-        columnas=("codigo","nombre","cantidad","talla","proveedor","preciodecosto","fechaderecepcion","preciodeventa")
+        columnas=("codigo","nombre","proveedor","costo","precio","stock","talla","fechaderecepcion")
 
         self.tree_lista_productos=tb.Treeview(self.lblframe_tree_listprod,columns=columnas,
                                          height=17,show='headings',bootstyle="dark")
@@ -461,14 +468,14 @@ class Ventana(tb.Window):
         
         self.tree_lista_productos.heading("codigo",text="Codigo",anchor=W)
         self.tree_lista_productos.heading("nombre",text="Nombre",anchor=W)
-        self.tree_lista_productos.heading("cantidad",text="Clave",anchor=W)
-        self.tree_lista_productos.heading("talla",text="Talla",anchor=W) 
-        self.tree_lista_productos.heading("proveedor",text="Proovedor",anchor=W)
-        self.tree_lista_productos.heading("preciodecosto",text="Precio de costo",anchor=W)
+        self.tree_lista_productos.heading("proveedor",text="Proveedor",anchor=W)
+        self.tree_lista_productos.heading("costo",text="Costo",anchor=W) 
+        self.tree_lista_productos.heading("precio",text="Precio",anchor=W)
+        self.tree_lista_productos.heading("stock",text="Stock",anchor=W)
+        self.tree_lista_productos.heading("talla",text="Talla",anchor=W)
         self.tree_lista_productos.heading("fechaderecepcion",text="Fecha de recepcion",anchor=W)
-        self.tree_lista_productos.heading("preciodeventa",text="Precio de venta",anchor=W)
 
-        self.tree_lista_productos['displaycolumns']=("codigo","nombre","talla","proveedor","preciodecosto","fechaderecepcion","preciodeventa")#esto es para ocultar la clave
+        self.tree_lista_productos['displaycolumns']=("codigo","nombre","proveedor","costo","precio","stock","talla","fechaderecepcion")
 
         #scrollbar
         tree_scroll_listaprod=tb.Scrollbar(self.frame_lista_productos,bootstyle='round-success')
@@ -499,36 +506,36 @@ class Ventana(tb.Window):
         self.txt_nombre_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
         self.txt_nombre_nuevo_producto.grid(row=1,column=1,padx=10,pady=10)
 
-        lbl_cantidad_nuevo_producto=Label(lblframe_nuevo_producto,text='Cantidad')
-        lbl_cantidad_nuevo_producto.grid(row=2,column=0,padx=10,pady=10)
-        self.txt_cantidad_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
-        self.txt_cantidad_nuevo_producto.grid(row=2,column=1,padx=10,pady=10)
+        lbl_proveedor_nuevo_producto=Label(lblframe_nuevo_producto,text='Proveedor')
+        lbl_proveedor_nuevo_producto.grid(row=2,column=0,padx=10,pady=10)
+        self.txt_proveedor_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_proveedor_nuevo_producto.grid(row=2,column=1,padx=10,pady=10)
 
+        lbl_costo_nuevo_producto=Label(lblframe_nuevo_producto,text='Costo')
+        lbl_costo_nuevo_producto.grid(row=3,column=0,padx=10,pady=10)
+        self.txt_costo_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_costo_nuevo_producto.grid(row=3,column=1,padx=10,pady=10)
+
+        lbl_precio_nuevo_producto=Label(lblframe_nuevo_producto,text='Precio')
+        lbl_precio_nuevo_producto.grid(row=4,column=0,padx=10,pady=10)
+        self.txt_precio_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_precio_nuevo_producto.grid(row=4,column=1,padx=10,pady=10)
+
+        lbl_stock_nuevo_producto=Label(lblframe_nuevo_producto,text='Stock')
+        lbl_stock_nuevo_producto.grid(row=5,column=0,padx=10,pady=10)
+        self.txt_stock_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
+        self.txt_stock_nuevo_producto.grid(row=5,column=1,padx=10,pady=10)
+        
         lbl_talla_nuevo_producto=Label(lblframe_nuevo_producto,text='Talla')
         lbl_talla_nuevo_producto.grid(row=7,column=0,padx=10,pady=10)
         self.txt_talla_nuevo_producto=ttk.Combobox(lblframe_nuevo_producto,values=('2','4','6','8','10','12','14','16','18','S','M','L','XL','XXL'),width=38,state='readonly')
         self.txt_talla_nuevo_producto.grid(row=7,column=1,padx=10,pady=10)
         self.txt_talla_nuevo_producto.current(0)
-
-        lbl_proveedor_nuevo_producto=Label(lblframe_nuevo_producto,text='Proveedor')
-        lbl_proveedor_nuevo_producto.grid(row=3,column=0,padx=10,pady=10)
-        self.txt_proveedor_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
-        self.txt_proveedor_nuevo_producto.grid(row=3,column=1,padx=10,pady=10)
-
-        lbl_preciodecosto_nuevo_producto=Label(lblframe_nuevo_producto,text='Precio de Costo')
-        lbl_preciodecosto_nuevo_producto.grid(row=4,column=0,padx=10,pady=10)
-        self.txt_preciodecosto_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
-        self.txt_preciodecosto_nuevo_producto.grid(row=4,column=1,padx=10,pady=10)
-
+        
         lbl_fechaderecepcion_nuevo_producto=Label(lblframe_nuevo_producto,text='Fecha de Recepcion')
-        lbl_fechaderecepcion_nuevo_producto.grid(row=5,column=0,padx=10,pady=10)
+        lbl_fechaderecepcion_nuevo_producto.grid(row=6,column=0,padx=10,pady=10)
         self.txt_fechaderecepcion_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
-        self.txt_fechaderecepcion_nuevo_producto.grid(row=5,column=1,padx=10,pady=10)
-
-        lbl_preciodeventa_nuevo_producto=Label(lblframe_nuevo_producto,text='Precio de Venta')
-        lbl_preciodeventa_nuevo_producto.grid(row=6,column=0,padx=10,pady=10)
-        self.txt_preciodeventa_nuevo_producto=Entry(lblframe_nuevo_producto,width=40)
-        self.txt_preciodeventa_nuevo_producto.grid(row=6,column=1,padx=10,pady=10)
+        self.txt_fechaderecepcion_nuevo_producto.grid(row=6,column=1,padx=10,pady=10)
 
 
         btn_guardar_nuevo_producto=ttk.Button(lblframe_nuevo_producto,text='Guardar',width=38,bootstyle='success',command=self.guardar_producto)
@@ -536,32 +543,35 @@ class Ventana(tb.Window):
     def centrar_ventana_nuevo_producto(self,ancho,alto):
         ventana_ancho=ancho
         ventana_alto=alto
-        pantalla_ancho=self.frame_rigth.winfo_screenwidth()
-        pantalla_alto=self.frame_rigth.winfo_screenheight()
+        pantalla_ancho=self.winfo_screenwidth()
+        pantalla_alto=self.winfo_screenheight()
         coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
         coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
         self.frame_nuevo_producto.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
     def centrar_ventana_modificar_producto(self,ancho,alto):
         ventana_ancho=ancho
         ventana_alto=alto
-        pantalla_ancho=self.frame_rigth.winfo_screenwidth()
-        pantalla_alto=self.frame_rigth.winfo_screenheight()
+        pantalla_ancho=self.winfo_screenwidth()
+        pantalla_alto=self.winfo_screenheight()
         coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
         coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
         self.frame_modificar_producto.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
     def guardar_producto(self):
         #Valida que no queden vacios los campos
-        if self.txt_codigo_nuevo_producto.get()=="" or self.txt_nombre_nuevo_producto.get()=="" or self.txt_cantidad_nuevo_producto.get()=="" or self.txt_proveedor_nuevo_producto.get()=="" or self.txt_preciodecosto_nuevo_producto.get()=="" or self.txt_fechaderecepcion_nuevo_producto.get()=="" or self.txt_preciodeventa_nuevo_producto.get()=="":
+        if self.txt_codigo_nuevo_producto.get()=="" or self.txt_nombre_nuevo_producto.get()=="" or self.txt_proveedor_nuevo_producto.get()=="" or self.txt_precio_nuevo_producto.get()=="" or self.txt_stock_nuevo_producto.get()=="" or self.txt_talla_nuevo_producto.get()=="" or self.txt_fechaderecepcion_nuevo_producto.get()=="":
             messagebox.showwarning("Guardando Producto","Algun campo no es valido, por favor revise")
             return
         #Capturador de errores
         try:
+            float(self.txt_costo_nuevo_producto.get())
+            float(self.txt_precio_nuevo_producto.get())
+            int(self.txt_stock_nuevo_producto.get())
             #Se establece la conexion
             miConexion=sqlite3.connect('Ventas.db')
             #Se crea el cursor
             miCursor=miConexion.cursor()
             
-            datos_guardar_producto=self.txt_codigo_nuevo_producto.get(),self.txt_nombre_nuevo_producto.get(),self.txt_cantidad_nuevo_producto.get(),self.txt_talla_nuevo_producto.get(),self.txt_proveedor_nuevo_producto.get(),self.txt_preciodecosto_nuevo_producto.get(),self.txt_fechaderecepcion_nuevo_producto.get(),self.txt_preciodeventa_nuevo_producto.get()
+            datos_guardar_producto=self.txt_codigo_nuevo_producto.get(),self.txt_nombre_nuevo_producto.get(),self.txt_proveedor_nuevo_producto.get(),self.txt_costo_nuevo_producto.get(),self.txt_precio_nuevo_producto.get(),self.txt_stock_nuevo_producto.get(),self.txt_talla_nuevo_producto.get(),self.txt_fechaderecepcion_nuevo_producto.get()
             #Se consulta la base de datos
             miCursor.execute("INSERT INTO Productos VALUES(?,?,?,?,?,?,?,?)",(datos_guardar_producto))
             messagebox.showinfo('Guardando Producto',"Producto Guardado Correctamente")
@@ -609,11 +619,11 @@ class Ventana(tb.Window):
             #Se consulta la base de datos
             miCursor.execute("SELECT * FROM Productos WHERE Nombre LIKE ?",(self.txt_busqueda_producto.get() + '%',) )
             #Con esto se traen todos los registros y se guardan en "datos"
-            datos=miCursor.fetchall()
+            datos_productos=miCursor.fetchall()
             #Se recorre cada fila encontrada
-            for row in datos:
+            for row in datos_productos:
                 #Se llena el treeview
-                self.tree_lista_productos.insert("",0,text=row[0],values=(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],))
+                self.tree_lista_productos.insert('',0,text=row[0],values=(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],))
             #se aplicand cambios
             miConexion.commit()
             #Se cierra la conexion
@@ -639,7 +649,7 @@ class Ventana(tb.Window):
 
            lbl_codigo_modificar_producto=Label(lblframe_modificar_producto,text='Codigo')
            lbl_codigo_modificar_producto.grid(row=0,column=0,padx=10,pady=10)
-           self.txt_codigo_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_codigo_modificar_producto=Entry(lblframe_modificar_producto,width=40,state='readonly')
            self.txt_codigo_modificar_producto.grid(row=0,column=1,padx=10,pady=10)
 
            lbl_nombre_modificar_producto=Label(lblframe_modificar_producto,text='Nombre')
@@ -647,37 +657,36 @@ class Ventana(tb.Window):
            self.txt_nombre_modificar_producto=Entry(lblframe_modificar_producto,width=40)
            self.txt_nombre_modificar_producto.grid(row=1,column=1,padx=10,pady=10)
 
-           lbl_cantidad_modificar_producto=Label(lblframe_modificar_producto,text='Cantidad')
-           lbl_cantidad_modificar_producto.grid(row=2,column=0,padx=10,pady=10)
-           self.txt_cantidad_modificar_producto=Entry(lblframe_modificar_producto,width=40)
-           self.txt_cantidad_modificar_producto.grid(row=2,column=1,padx=10,pady=10)
+           lbl_proveedor_modificar_producto=Label(lblframe_modificar_producto,text='Proveedor')
+           lbl_proveedor_modificar_producto.grid(row=2,column=0,padx=10,pady=10)
+           self.txt_proveedor_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_proveedor_modificar_producto.grid(row=2,column=1,padx=10,pady=10)
 
+           lbl_costo_modificar_producto=Label(lblframe_modificar_producto,text='Costo')
+           lbl_costo_modificar_producto.grid(row=3,column=0,padx=10,pady=10)
+           self.txt_costo_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_costo_modificar_producto.grid(row=3,column=1,padx=10,pady=10)
+
+           lbl_precio_modificar_producto=Label(lblframe_modificar_producto,text='Precio')
+           lbl_precio_modificar_producto.grid(row=4,column=0,padx=10,pady=10)
+           self.txt_precio_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_precio_modificar_producto.grid(row=4,column=1,padx=10,pady=10)
+
+           lbl_stock_modificar_producto=Label(lblframe_modificar_producto,text='Stock')
+           lbl_stock_modificar_producto.grid(row=5,column=0,padx=10,pady=10)
+           self.txt_stock_modificar_producto=Entry(lblframe_modificar_producto,width=40)
+           self.txt_stock_modificar_producto.grid(row=5,column=1,padx=10,pady=10)
+        
            lbl_talla_modificar_producto=Label(lblframe_modificar_producto,text='Talla')
            lbl_talla_modificar_producto.grid(row=7,column=0,padx=10,pady=10)
            self.txt_talla_modificar_producto=ttk.Combobox(lblframe_modificar_producto,values=('2','4','6','8','10','12','14','16','18','S','M','L','XL','XXL'),width=38,state='readonly')
            self.txt_talla_modificar_producto.grid(row=7,column=1,padx=10,pady=10)
            self.txt_talla_modificar_producto.current(0)
-
-           lbl_proveedor_modificar_producto=Label(lblframe_modificar_producto,text='Proveedor')
-           lbl_proveedor_modificar_producto.grid(row=3,column=0,padx=10,pady=10)
-           self.txt_proveedor_modificar_producto=Entry(lblframe_modificar_producto,width=40)
-           self.txt_proveedor_modificar_producto.grid(row=3,column=1,padx=10,pady=10)
-
-           lbl_preciodecosto_modificar_producto=Label(lblframe_modificar_producto,text='Precio de Costo')
-           lbl_preciodecosto_modificar_producto.grid(row=4,column=0,padx=10,pady=10)
-           self.txt_preciodecosto_modificar_producto=Entry(lblframe_modificar_producto,width=40)
-           self.txt_preciodecosto_modificar_producto.grid(row=4,column=1,padx=10,pady=10)
-   
+        
            lbl_fechaderecepcion_modificar_producto=Label(lblframe_modificar_producto,text='Fecha de Recepcion')
-           lbl_fechaderecepcion_modificar_producto.grid(row=5,column=0,padx=10,pady=10)
+           lbl_fechaderecepcion_modificar_producto.grid(row=6,column=0,padx=10,pady=10)
            self.txt_fechaderecepcion_modificar_producto=Entry(lblframe_modificar_producto,width=40)
-           self.txt_fechaderecepcion_modificar_producto.grid(row=5,column=1,padx=10,pady=10)
-
-           lbl_preciodeventa_modificar_producto=Label(lblframe_modificar_producto,text='Precio de Venta')
-           lbl_preciodeventa_modificar_producto.grid(row=6,column=0,padx=10,pady=10)
-           self.txt_preciodeventa_modificar_producto=Entry(lblframe_modificar_producto,width=40)
-           self.txt_preciodeventa_modificar_producto.grid(row=6,column=1,padx=10,pady=10)
-
+           self.txt_fechaderecepcion_modificar_producto.grid(row=6,column=1,padx=10,pady=10)
 
            btn_guardar_modificar_producto=ttk.Button(lblframe_modificar_producto,text='Modificar',width=38,bootstyle='warning',command=self.modificar_producto)
            btn_guardar_modificar_producto.grid(row=8,column=1,padx=10,pady=10)
@@ -687,26 +696,183 @@ class Ventana(tb.Window):
         #Se limpian todos los entrys
         self.txt_codigo_modificar_producto.delete(0,END)
         self.txt_nombre_modificar_producto.delete(0,END)
-        self.txt_cantidad_modificar_producto.delete(0,END)
-        self.txt_talla_modificar_producto.delete(0,END)
         self.txt_proveedor_modificar_producto.delete(0,END)
-        self.txt_preciodecosto_modificar_producto.delete(0,END)
+        self.txt_costo_modificar_producto.delete(0,END)
+        self.txt_precio_modificar_producto.delete(0,END)
+        self.txt_stock_modificar_producto.delete(0,END)
+        self.txt_talla_modificar_producto.delete(0,END)
         self.txt_fechaderecepcion_modificar_producto.delete(0,END)
-        self.txt_preciodeventa_modificar_producto.delete(0,END)
         #Se llenan los entrys
         self.txt_codigo_modificar_producto.insert(0,self.val_mod_prod[0])
         self.txt_nombre_modificar_producto.insert(0,self.val_mod_prod[1])
-        self.txt_cantidad_modificar_producto.insert(0,self.val_mod_prod[2])
-        self.txt_talla_modificar_producto.insert(0,self.val_mod_prod[3])
-        self.txt_proveedor_modificar_producto.insert(0,self.val_mod_prod[4])
-        self.txt_preciodecosto_modificar_producto.insert(0,self.val_mod_prod[5])
-        self.txt_fechaderecepcion_modificar_producto.insert(0,self.val_mod_prod[6])
-        self.txt_preciodeventa_modificar_producto.insert(0,self.val_mod_prod[7])
+        self.txt_proveedor_modificar_producto.insert(0,self.val_mod_prod[2])
+        self.txt_costo_modificar_producto.insert(0,self.val_mod_prod[3])
+        self.txt_precio_modificar_producto.insert(0,self.val_mod_prod[4])
+        self.txt_stock_modificar_producto.insert(0,self.val_mod_prod[5])
+        self.txt_talla_modificar_producto.insert(0,self.val_mod_prod[6])
+        self.txt_fechaderecepcion_modificar_producto.insert(0,self.val_mod_prod[7])
     def modificar_producto(self):
         #Valida que no queden vacios los campos
-        if self.txt_codigo_modificar_producto.get()=="" or self.txt_nombre_modificar_producto.get()=="" or self.txt_cantidad_modificar_producto.get()=="" or self.txt_proveedor_modificar_producto.get()=="" or self.txt_preciodecosto_modificar_producto.get()=="" or self.txt_fechaderecepcion_modificar_producto.get()=="" or self.txt_preciodeventa_modificar_producto.get()=="":
-            messagebox.showwarning("Modificar Producto","Algun campo no es valido, por favor revise")
+       if self.txt_codigo_modificar_producto.get()=="" or self.txt_nombre_modificar_producto.get()=="" or self.txt_proveedor_modificar_producto.get()=="" or self.txt_precio_modificar_producto.get()=="" or self.txt_stock_modificar_producto.get()=="" or self.txt_talla_modificar_producto.get()=="" or self.txt_fechaderecepcion_modificar_producto.get()=="":
+            messagebox.showwarning("Modificando Producto","Algun campo no es valido, por favor revise")
             return
+        #Capturador de errores
+       try:
+            float(self.txt_costo_modificar_producto.get())
+            float(self.txt_precio_modificar_producto.get())
+            int(self.txt_stock_modificar_producto.get())
+             #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            
+            modificar_datos_producto=(self.txt_nombre_modificar_producto.get(),self.txt_proveedor_modificar_producto.get(),self.txt_costo_modificar_producto.get(),self.txt_precio_modificar_producto.get(),self.txt_stock_modificar_producto.get(),self.txt_talla_modificar_producto.get(),self.txt_fechaderecepcion_modificar_producto.get())
+            #Se consulta la base de datos
+            miCursor.execute("UPDATE Productos SET Nombre=?,Proveedor=?,Costo=?,Precio=?,Stock=?,Talla=?,Fechaderecepcion=? WHERE Codigo="+self.txt_codigo_modificar_producto.get(),(modificar_datos_producto))
+            messagebox.showinfo('Modificar Productos',"Producto Modificado Correctamente")
+            #se aplican cambios
+            miConexion.commit()
+            self.valores_producto_seleccionado=self.tree_lista_productos.item(self.producto_seleccionado,text='',values=(self.txt_codigo_modificar_producto.get(),self.txt_nombre_modificar_producto.get(),self.txt_proveedor_modificar_producto.get(),self.txt_costo_modificar_producto.get(),self.txt_precio_modificar_producto.get(),self.txt_stock_modificar_producto.get(),self.txt_talla_modificar_producto.get(),self.txt_fechaderecepcion_modificar_producto.get()))
+            self.frame_modificar_producto.destroy()
+            #Se cierra la conexion
+            miConexion.close()
+       except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Modificar Productos","Ocurrio un error al Modificar Producto")
+    
+#===============================VENTAS====================================
+
+    def ventana_detalle_ventas(self):
+        self.borrar_frames()
+        self.frame_detalle_venta=tb.Frame(self.frame_center)
+        self.frame_detalle_venta.grid(row=0,column=1,sticky=NSEW)
+
+        self.lblframe_botones_detalle_venta=tb.LabelFrame(self.frame_detalle_venta)
+        self.lblframe_botones_detalle_venta.grid(row=0,column=0,sticky=NSEW)
+
+        btn_detalle=tb.Button(self.lblframe_botones_detalle_venta,text='Detalle',width=12
+                                    )
+        btn_detalle.grid(row=0,column=0,padx=5)
+
+        btn_cantidad=tb.Button(self.lblframe_botones_detalle_venta,text='Cantidad',width=12,command=self.ventana_modificar_cantidad)
+        btn_cantidad.grid(row=0,column=1,padx=5)
+
+        btn_borrar=tb.Button(self.lblframe_botones_detalle_venta,text='Borrar',width=12,command=self.borrar_producto_detalle_venta)
+        btn_borrar.grid(row=0,column=2,padx=4)   
+
+        btn_descuento=tb.Button(self.lblframe_botones_detalle_venta,text='Descuento',width=12,command=self.ventana_descuento)
+        btn_descuento.grid(row=0,column=3,padx=5)
+
+        btn_cobrar=tb.Button(self.lblframe_botones_detalle_venta,text='Cobrar',width=12,command=self.ventana_contado)
+        btn_cobrar.grid(row=0,column=4,padx=5)
+
+        btn_credito=tb.Button(self.lblframe_botones_detalle_venta,text='Credito',width=12)
+        btn_credito.grid(row=0,column=5,padx=5)
+
+        self.busqueda_codigo()
+        self.busqueda_nombre()               
+
+        #========================Treeview=====================================
+        
+        self.lblframe_tree_lista_detalle_venta=LabelFrame(self.frame_detalle_venta)
+        self.lblframe_tree_lista_detalle_venta.grid(row=2,column=0,sticky=NSEW)
+
+        columnas=("no","codigo","nombre","costo","precio","cantidad","stock","descuento","subtotal","existencia")
+
+        self.tree_detalle_venta=tb.Treeview(self.lblframe_tree_lista_detalle_venta,columns=columnas,
+                                         height=34,show='headings',bootstyle="dark")
+        self.tree_detalle_venta.grid(row=0,column=0)
+        
+        self.tree_detalle_venta.heading("no",text="No",anchor=W)
+        self.tree_detalle_venta.heading("codigo",text="Codigo",anchor=W)
+        self.tree_detalle_venta.heading("nombre",text="Nombre",anchor=W)
+        self.tree_detalle_venta.heading("costo",text="Costo",anchor=W) 
+        self.tree_detalle_venta.heading("precio",text="Precio",anchor=W)
+        self.tree_detalle_venta.heading("cantidad",text="Cantidad",anchor=W)
+        self.tree_detalle_venta.heading("stock",text="Stock",anchor=W)
+        self.tree_detalle_venta.heading("descuento",text="Descuento",anchor=W)
+        self.tree_detalle_venta.heading("subtotal",text="Subtotal",anchor=W)
+        self.tree_detalle_venta.heading("existencia",text="Existencia",anchor=W)
+  
+        self.tree_detalle_venta['displaycolumns']=("codigo","nombre","precio","cantidad","subtotal","existencia")
+
+        #scrollbar
+        tree_scroll=tb.Scrollbar(self.frame_detalle_venta,bootstyle='round-success')
+        tree_scroll.grid(row=2,column=2,pady=10)
+        #Configuracion del scrollbar
+        tree_scroll.config(command=self.tree_detalle_venta.yview)
+
+        self.lblframe_total_detalle_venta=tb.LabelFrame(self.frame_detalle_venta)
+        self.lblframe_total_detalle_venta.grid(row=3,column=0,sticky=NSEW)
+
+        self.txt_total_detalle_venta=tb.Entry(self.lblframe_total_detalle_venta,width=59,font=('calibri',24),justify=CENTER)
+        self.txt_total_detalle_venta.grid(row=0,column=0)
+
+        self.ent_busqueda_detalle_venta.focus()
+        self.ventana_busqueda_detalle_venta()
+        self.buscar_productos_detalle_venta('')
+        self.mostrar_productos_detalle_venta()
+        self.total_detalle_venta()
+        self.correlativo_ventas()
+    def busqueda_nombre(self):
+        self.lblframe_busqueda_detalle_venta=tb.LabelFrame(self.frame_detalle_venta)
+        self.lblframe_busqueda_detalle_venta.grid(row=1,column=0,sticky=NSEW) 
+        
+        self.btn_busqueda_nombre=tb.Button(self.lblframe_busqueda_detalle_venta,text='abc',bootstyle='success-outline',command=self.busqueda_codigo)
+        self.btn_busqueda_nombre.grid(row=0,column=0)
+       
+        self.ent_busqueda_detalle_venta=ttk.Entry(self.lblframe_busqueda_detalle_venta,font=14,width=64,bootstyle='info')
+        self.ent_busqueda_detalle_venta.grid(row=0,column=1)  
+        self.ent_busqueda_detalle_venta.bind('<KeyRelease>',self.buscar_productos_detalle_venta)
+    def busqueda_codigo(self):
+        self.lblframe_busqueda_detalle_venta=tb.LabelFrame(self.frame_detalle_venta)
+        self.lblframe_busqueda_detalle_venta.grid(row=1,column=0,sticky=NSEW) 
+        
+        self.btn_busqueda_codigo=tb.Button(self.lblframe_busqueda_detalle_venta,text=' # ',bootstyle='success-outline',command=self.busqueda_nombre)
+        self.btn_busqueda_codigo.grid(row=0,column=0)
+       
+        self.txt_busqueda_codigo_detalle_venta=ttk.Entry(self.lblframe_busqueda_detalle_venta,font=14,width=64,bootstyle='info')
+        self.txt_busqueda_codigo_detalle_venta.grid(row=0,column=1)  
+        self.txt_busqueda_codigo_detalle_venta.bind('<Return>',self.producto_encontrado_detalle_venta)    
+    def ventana_busqueda_detalle_venta(self):
+        self.frame_busqueda_detalle_venta=ScrolledFrame(self,width=517,autohide=True)
+        self.frame_busqueda_detalle_venta.grid(row=0,column=2,sticky=NSEW)
+    def buscar_productos_detalle_venta(self,event):
+        try:
+            
+            miConexion=sqlite3.connect('Ventas.db')
+            
+            miCursor=miConexion.cursor()
+            
+            for wid in self.frame_busqueda_detalle_venta.winfo_children():
+                wid.destroy()
+            
+            miCursor.execute("SELECT * FROM Productos WHERE Nombre LIKE ?",(self.ent_busqueda_detalle_venta.get() + '%',) )
+            
+            datos_productos_detalle_venta=miCursor.fetchall()
+
+            codigo_busqueda_detalle_venta=StringVar()
+            contador=0
+            filas=2
+            
+            for row in datos_productos_detalle_venta:
+
+                radbutton=Radiobutton(self.frame_busqueda_detalle_venta,text=row[1]+'\n'+row[2]+'\n' '\n'+str(f'${row[4]:,.2f}'),value=row[0],variable=codigo_busqueda_detalle_venta,indicatoron=0,width=30,height=5,command=lambda:self.pasar_codigo_detalle_venta(codigo_busqueda_detalle_venta.get()))
+                radbutton.grid(row=contador//filas,column=contador%filas)
+                contador+=1
+                
+            
+            miConexion.commit()
+            
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Busqueda de productos", "Ocurrio un error al buscar en la lista de productos")
+    def pasar_codigo_detalle_venta(self,codigo_seleccionado_detalle_venta):
+        self.txt_busqueda_codigo_detalle_venta.insert(0,codigo_seleccionado_detalle_venta)
+        self.producto_encontrado_detalle_venta('')
+    def producto_seleccionado_detalle_venta(self):
         #Capturador de errores
         try:
             #Se establece la conexion
@@ -714,22 +880,453 @@ class Ventana(tb.Window):
             #Se crea el cursor
             miCursor=miConexion.cursor()
             
-            datos_modificar_producto=self.txt_nombre_modificar_producto.get(),self.txt_cantidad_modificar_producto.get(),self.txt_talla_modificar_producto.get()
-            #Se consulta la base de datos
-            miCursor.execute("UPDATE Productos SET nombre=?,cantidad=?,talla=?,proveedor=?,preciodecosto=?,fechaderecepcion=?,preciodeventa=? WHERE Codigo="+self.txt_codigo_modificar_producto.get(),(datos_modificar_producto))
-            messagebox.showinfo('Modificar Producto',"Producto Modificado Correctamente")
-            #se aplican cambios
+            miCursor.execute("SELECT * FROM Productos WHERE Codigo="+self.txt_busqueda_codigo_detalle_venta.get())
+            #Con esto se traen todos los registros y se guardan en "datos"
+            datos_producto_seleccionado=miCursor.fetchall()
+
+            if datos_producto_seleccionado!=None:
+                for row in datos_producto_seleccionado:
+                    self.datos_guardar_producto_detalle_venta=(int(self.nuevo_correlativo_ventas),row[0],row[1],row[3],row[4],'1',row[5],'0')
+            self.mostrar_productos_detalle_venta 
+            self.agregar_producto_detalle_venta()
+            
+
             miConexion.commit()
-            self.val_mod_prod=self.tree_lista_productos.item(self.producto_seleccionado,text='',values=(self.txt_codigo_modificar_producto.get(),self.txt_nombre_modificar_producto.get(),self.txt_cantidad_modificar_producto.get(),self.txt_proveedor_modificar_producto.get(),self.txt_preciodecosto_modificar_producto.get(),self.txt_fechaderecepcion_modificar_producto.get(),self.txt_preciodeventa_modificar_producto.get(),))
-            self.frame_modificar_producto.destroy()#Se cierra la ventana guardar nuevo usuario
-            #self.ventana_lista_productos()#Se carga nuevamente la ventana de usuarios para ver los cambios
             #Se cierra la conexion
             miConexion.close()
 
         except:
             #Mensaje si ocurre algun error
-            messagebox.showerror("Modificar Producto", "Ocurrio un error al Modificar el Producto")
+            messagebox.showerror("Producto Seleccionado", "Ocurrio un error al buscar en la lista de productos")
+    def agregar_producto_detalle_venta(self):
 
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()  
+            miCursor.execute("INSERT INTO DetalleVentaT VALUES(?,?,?,?,?,?,?,?)",(self.datos_guardar_producto_detalle_venta))
+            messagebox.showinfo('Agregando Productos Detalle Venta',"Registro Agregado Correctamente")
+            #se aplican cambios
+            miConexion.commit()
+            self.frame_nuevo_producto.destroy()
+            self.ventana_lista_productos()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+             #Mensaje si ocurre algun error
+            messagebox.showerror("Agregando Productos Detalle Venta", "Ocurrio un error al Agregar el Producto")
+    def mostrar_productos_detalle_venta(self):
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            #Se limpia el treeview
+            registros=self.tree_detalle_venta.get_children()
+            #Se recorre cada regristro
+            for elementos in registros:
+                self.tree_detalle_venta.delete(elementos)
+            #Se consulta la base de datos
+            miCursor.execute("SELECT * FROM DetalleVentaT")
+            #Con esto se traen todos los registros y se guardan en "datos"
+            datos_productos_detalle_venta=miCursor.fetchall()
+            #Se recorre cada fila encontrada
+            for row in datos_productos_detalle_venta:
+                #Calcular el subtotal y la existencia
+
+                subtotal=float(row[4]*row[5])
+                existencia=int(row[6]-row[5])
+                self.tree_detalle_venta.insert('',0,text=row[0],values=(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],subtotal,existencia))
+            #se aplicand cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Busqueda de productos detalle venta", "Ocurrio un error al buscar en la lista de productos")
+    def producto_encontrado_detalle_venta(self,event):
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            
+            miCursor.execute("SELECT * FROM DetalleVentaT WHERE Codigo="+self.txt_busqueda_codigo_detalle_venta.get())
+            producto_entontrado=miCursor.fetchall()
+            for row in producto_entontrado:
+                cantidad_actual=row[5]
+                stock_actual=row[6]
+                existencia=int(stock_actual-cantidad_actual)
+                if existencia==0:
+                    messagebox.showwarning('Existencia','Producto sin existencia')
+                    self.txt_busqueda_codigo_detalle_venta.delete(0,END)
+                    return
+            if producto_entontrado==[]:
+                miCursor.execute("SELECT Stock FROM Productos WHERE Codigo="+self.txt_busqueda_codigo_detalle_venta.get())
+                producto_no_entontrado=miCursor.fetchall()
+                for row in producto_no_entontrado:
+                    stock=row[0]
+                    if stock==0:
+                        messagebox.showwarning('Existencia','Producto sin existencia')
+                        self.txt_busqueda_codigo_detalle_venta.delete(0,END)
+                        return
+                    else:
+                       self.producto_seleccionado_detalle_venta()
+                       self.txt_busqueda_codigo_detalle_venta.delete(0,END)
+                       self.total_detalle_venta()
+            else:
+                self.sumar_uno_detalle_venta()
+                self.txt_busqueda_codigo_detalle_venta.delete(0,END)
+                self.total_detalle_venta()
+                
+            #se aplicand cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Productos", "Producto no encontrado")
+    def sumar_uno_detalle_venta(self):
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+
+            miCursor.execute("UPDATE DetalleVentaT SET Cantidad=Cantidad + 1 WHERE Codigo="+self.txt_busqueda_codigo_detalle_venta.get())
+            #se aplican cambios
+            miConexion.commit()
+            self.mostrar_productos_detalle_venta()
+
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Sumar uno detalle venta", "Ocurrio un error al Modificar Usuario")
+    def borrar_producto_detalle_venta(self):
+        self.producto_seleccionado_eliminar=self.tree_detalle_venta.focus()
+        self.valor_producto_seleccionado_eliminar = self.tree_detalle_venta.item(self.producto_seleccionado_eliminar, 'values')
+        if self.valor_producto_seleccionado_eliminar!='':
+            
+            try:
+                    miConexion = sqlite3.connect('Ventas.db')
+                    miCursor = miConexion.cursor()
+                    miCursor.execute("DELETE FROM DetalleVentaT WHERE Codigo="+ str(self.valor_producto_seleccionado_eliminar[1]))
+
+                    miConexion.commit()
+                    messagebox.showinfo('Eliminando Producto Detalle Venta', 'Registro Eliminado Correctamente')
+                    self.mostrar_productos_detalle_venta()
+                    self.total_detalle_venta()
+                    miConexion.close()
+            except:
+                messagebox.showerror('Eliminando Producto Detalle venta','Ocurrió un error')
+    def total_detalle_venta(self):
+        self.total=0
+        for row in self.tree_detalle_venta.get_children():
+            self.total+=float(self.tree_detalle_venta.item(row,'values')[8])
+
+        self.txt_total_detalle_venta.config(state=NORMAL)
+        self.txt_total_detalle_venta.delete(0,END)
+        self.txt_total_detalle_venta.insert(0,f'${self.total:,.2f}')
+        self.txt_total_detalle_venta.config(state='readonly')
+    def ventana_modificar_cantidad(self):
+        #Con esto se valida que se abra la ventana si solamentente hay algun valor seleccionado
+        self.cantidad_seleccionada=self.tree_detalle_venta.focus()
+        self.val_can_sel=self.tree_detalle_venta.item(self.cantidad_seleccionada,'values')
+        if self.val_can_sel!='':
+            
+        
+           self.frame_modificar_cantidad=Toplevel(self)#Ventana que va encima de la lista de usuarios
+           self.frame_modificar_cantidad.title('Modificar Cantidad')#titulo de la ventana
+           self.centrar_ventana_modificar_cantidad(400,250)
+           self.frame_modificar_cantidad.resizable(0,0)#Para que no se pueda maximixar ni minimizar
+           self.frame_modificar_cantidad.grab_set()#Para que no permita ninguna otra accion hasa que se cierre la ventana
+           
+           variable_nombre=(self.val_can_sel[2])
+
+           lbl_nombre_cantidad=tb.Label(self.frame_modificar_cantidad,text='Producto',font=('Calibri',16),bootstyle='info')
+           lbl_nombre_cantidad.pack(padx=10,pady=35)
+           lbl_nombre_cantidad.config(text=variable_nombre)
+
+           lbl_cantidad_modificar=Label(self.frame_modificar_cantidad,text='Cantidad',font=14)
+           lbl_cantidad_modificar.pack(padx=10,pady=5)
+           self.txt_cantidad_modificar_detalle=Entry(self.frame_modificar_cantidad,justify=CENTER,font=14)
+           self.txt_cantidad_modificar_detalle.pack(padx=10,pady=15)
+           self.txt_cantidad_modificar_detalle.insert(0,self.val_can_sel[5])
+           self.txt_cantidad_modificar_detalle.focus()
+           self.txt_cantidad_modificar_detalle.bind('<Return>',self.modificar_cantidad)
+    def centrar_ventana_modificar_cantidad(self,ancho,alto):
+        ventana_ancho=ancho
+        ventana_alto=alto
+        pantalla_ancho=self.winfo_screenwidth()
+        pantalla_alto=self.winfo_screenheight()
+        coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
+        coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
+        self.frame_modificar_cantidad.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
+    def modificar_cantidad(self,event):
+        #Valida que no queden vacios los campos
+        if self.txt_cantidad_modificar_detalle.get()=='0':
+            messagebox.showwarning("Modificar Cantidad","La cantidad no es valida")
+            return
+        if int(self.txt_cantidad_modificar_detalle.get())>int(self.val_can_sel[6]):
+            messagebox.showerror('Modificando Cantidad','Existencia insuficiente')
+            return
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+
+            codigo=self.val_can_sel[1]
+            cantidad=self.txt_cantidad_modificar_detalle.get()
+            
+            miCursor.execute("UPDATE DetalleVentaT SET Cantidad=? WHERE Codigo = ?",(cantidad,codigo))
+            
+            miConexion.commit()
+
+            subtotal=float(self.val_can_sel[4])*float(self.txt_cantidad_modificar_detalle.get())
+            existencia=int(self.val_can_sel[6])-int(self.txt_cantidad_modificar_detalle.get())
+
+            self.val_can_sel=self.tree_detalle_venta.item(self.cantidad_seleccionada,text='',values=(self.val_can_sel[0],self.val_can_sel[1],self.val_can_sel[2],self.val_can_sel[3],self.val_can_sel[4],self.txt_cantidad_modificar_detalle.get(),self.val_can_sel[6],self.val_can_sel[7],subtotal,existencia))
+            self.frame_modificar_cantidad.destroy()
+            self.total_detalle_venta()
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Modificar Cantidad Detalle Venta", "Ocurrio un error")
+    def ventana_descuento(self):
+        #Con esto se valida que se abra la ventana si solamentente hay algun valor seleccionado
+        self.descuento_seleccionado=self.tree_detalle_venta.focus()
+        self.valor_descuento_seleccionado=self.tree_detalle_venta.item(self.descuento_seleccionado,'values')
+        if self.valor_descuento_seleccionado!='':
+            
+           self.buscar_precio_descuento()
+        
+           self.frame_descuento=Toplevel(self)#Ventana que va encima de la lista de usuarios
+           self.frame_descuento.title('Aplicar Descuento')#titulo de la ventana
+           self.centrar_ventana_descuento(400,350)
+           self.frame_descuento.resizable(0,0)#Para que no se pueda maximixar ni minimizar
+           self.frame_descuento.grab_set()#Para que no permita ninguna otra accion hasa que se cierre la ventana
+           
+           nombre_descuento=(self.valor_descuento_seleccionado[2])
+           costo_descuento=(self.valor_descuento_seleccionado[3])
+           #precio_descuento=(self.valor_descuento_seleccionado[4])
+           precio_descuento=(self.precio_aplicar_descuento)
+
+           lbl_nombre_descuento=tb.Label(self.frame_descuento,text='Producto',font=('Calibri',16),bootstyle='info')
+           lbl_nombre_descuento.pack(padx=10,pady=15)
+           lbl_nombre_descuento.config(text=nombre_descuento)
+
+           lbl_costo_descuento=tb.Label(self.frame_descuento,text='Costo',font=('Calibri',16))
+           lbl_costo_descuento.pack(padx=10,pady=5)
+           lbl_costo_descuento.config(text=f'Costo: {costo_descuento}')
+
+           lbl_precio_descuento=tb.Label(self.frame_descuento,text='Precio',font=('Calibri',16))
+           lbl_precio_descuento.pack(padx=10,pady=5)
+           lbl_precio_descuento.config(text=f'Precio: {precio_descuento}')
+
+           lbl_nuevo_precio=tb.Label(self.frame_descuento,text='Nuevo Precio',font=('Calibri',16),bootstyle='warning')
+           lbl_nuevo_precio.pack(padx=10,pady=5)
+           self.txt_nuevo_precio=Entry(self.frame_descuento,justify=CENTER,font=14)
+           self.txt_nuevo_precio.pack(padx=10,pady=15)
+           self.txt_nuevo_precio.insert(0,self.valor_descuento_seleccionado[4])
+           self.txt_nuevo_precio.focus_set()
+           self.txt_nuevo_precio.bind('<Return>',self.aplicar_descuento)        
+    def centrar_ventana_descuento(self,ancho,alto):
+        ventana_ancho=ancho
+        ventana_alto=alto
+        pantalla_ancho=self.winfo_screenwidth()
+        pantalla_alto=self.winfo_screenheight()
+        coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
+        coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
+        self.frame_descuento.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
+    def aplicar_descuento(self,event):
+        try:
+            float(self.txt_nuevo_precio.get())
+
+            if float(self.txt_nuevo_precio.get())<float(self.valor_descuento_seleccionado[3]):
+                messagebox.showerror("Aplicando Descuento","La nuevo precio esta por debajo del costo")
+                return
+            if float(self.txt_nuevo_precio.get())>float(self.precio_aplicar_descuento):
+                messagebox.showerror("Aplicando Descuento","No está aplicando ningun descuento, el nuevo precio es mayor al precio actual")
+                return
+            #Calcular descuento
+            descuento_unitario=float(self.precio_aplicar_descuento)-float(self.txt_nuevo_precio.get())
+        
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+
+            codigo=self.valor_descuento_seleccionado[1]
+            precio=self.txt_nuevo_precio.get()
+            
+            miCursor.execute("UPDATE DetalleVentaT SET Precio=?, Descuento=? WHERE Codigo = ?",(precio,descuento_unitario,codigo))
+            
+            miConexion.commit()
+
+            subtotal=float(self.valor_descuento_seleccionado[5])*float(self.txt_nuevo_precio.get())
+            existencia=int(self.valor_descuento_seleccionado[6])-int(self.valor_descuento_seleccionado[5])
+
+            self.valor_descuento_seleccionado=self.tree_detalle_venta.item(self.descuento_seleccionado,text='',values=(self.valor_descuento_seleccionado[0],self.valor_descuento_seleccionado[1],self.valor_descuento_seleccionado[2],self.valor_descuento_seleccionado[3],self.txt_nuevo_precio.get(),self.valor_descuento_seleccionado[5],self.valor_descuento_seleccionado[6],descuento_unitario,subtotal,existencia))
+            self.frame_descuento.destroy()
+            self.total_detalle_venta()
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Aplicando descuento", "Ocurrio un error")
+    def buscar_precio_descuento(self):
+        try:
+            
+            miConexion=sqlite3.connect('Ventas.db')
+            
+            miCursor=miConexion.cursor()
+            
+            miCursor.execute("SELECT Precio FROM Productos WHERE Codigo="+self.valor_descuento_seleccionado[1])
+            
+            datos_precio_descuento=miCursor.fetchall()
+
+            for row in datos_precio_descuento:
+                self.precio_aplicar_descuento=row[0]
+
+
+            miConexion.commit()
+            
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Busqueda de productos", "Ocurrio un error al buscar en la lista de productos")
+    def ventana_contado(self):
+        
+
+            fecha_actual=datetime.now()
+
+            self.fecha_venta_contado=(fecha_actual.strftime('%d/%m/%Y'))
+            self.hora_venta_contado=(fecha_actual.strftime('%H:%M:%S'))
+
+            self.frame_contado=Toplevel(self)
+            self.frame_contado.title('Cobrar Venta de Contado')
+            self.centrar_ventana_contado(580,380)
+            self.frame_contado.grab_set()
+
+            self.lblframe_total=tb.LabelFrame(self.frame_contado)
+            self.lblframe_total.grid(row=0,column=0,padx=10,pady=10,sticky=NSEW)
+
+            lbl_total_contado=tb.Label(self.lblframe_total,text='Total Venta',font=('Calibri',22),bootstyle='info')
+            lbl_total_contado.pack()
+            lbl_total_venta=tb.Label(self.lblframe_total,text='Total',font=('Calibri',22))
+            lbl_total_venta.pack()
+            lbl_total_venta.config(text=f'${self.total:,.2f}')
+
+            self.lblframe_cambio=tb.LabelFrame(self.frame_contado)
+            self.lblframe_cambio.grid(row=1,column=0,padx=10,pady=10,sticky=NSEW)
+
+            lbl_efectivo=tb.Label(self.lblframe_cambio,text='Efectivo',font=('Calibri',22),bootstyle='warning')
+            lbl_efectivo.grid(row=0,column=0,padx=10,pady=10)
+            
+            self.ent_efectivo=tb.Entry(self.lblframe_cambio,justify=CENTER,font=('Calibri',22))
+            self.ent_efectivo.grid(row=0,column=1,padx=10,pady=10)
+            self.ent_efectivo.insert(0,self.total)
+            self.ent_efectivo.bind('<KeyRelease>',self.calcular_cambio)
+
+            lbl_cambio=tb.Label(self.lblframe_cambio,text='Cambio',font=('Calibri',22),bootstyle='warning')
+            lbl_cambio.grid(row=1,column=0,padx=10,pady=10)
+
+            self.lbl_calculo_cambio=tb.Label(self.lblframe_cambio,text='$0,00',font=('Calibri',22))
+            self.lbl_calculo_cambio.grid(row=1,column=1,padx=10,pady=10)
+
+            btn_cobro_contado=tb.Button(self.lblframe_cambio,text='Cobrar',width=45,bootstyle='success',command=self.guardar_ventas)
+            btn_cobro_contado.grid(row=2,column=1,padx=10,pady=10)
+
+            self.ent_efectivo.focus()
+    def calcular_cambio(self,event):
+        if self.ent_efectivo.get()=='':
+            self.lbl_calculo_cambio.config(text='$0.00')
+            return
+        try:
+            float(self.ent_efectivo.get())
+            cambio=0
+            venta=(self.total)
+            efectivo=(self.ent_efectivo.get())
+
+            cambio=float(efectivo)-float(venta)
+            self.lbl_calculo_cambio.config(text=f'${cambio:,.2f}')
+
+        except:
+            messagebox.showerror('Calcular Cambio','Algun dato no es valido')
+    def centrar_ventana_contado(self,ancho,alto):
+        ventana_ancho=ancho
+        ventana_alto=alto
+        pantalla_ancho=self.winfo_screenwidth()
+        pantalla_alto=self.winfo_screenheight()
+        coordenadas_x=int((pantalla_ancho/2)-(ventana_ancho/2))
+        coordenadas_y=int((pantalla_alto/2)-(ventana_alto/2))
+        self.frame_contado.geometry("{}x{}+{}+{}".format(ventana_ancho,ventana_alto,coordenadas_x,coordenadas_y))
+    def correlativo_ventas(self):
+        try:
+
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            miCursor.execute("SELECT MAX(No) FROM Ventas")
+            #Con esto se traen todos los registros y se guardan en "datos"
+            correlativo_ventas=miCursor.fetchone()
+            for datos in correlativo_ventas:
+                if datos==None:
+                    self.nuevo_correlativo_ventas=(int(1))
+                   
+                else:
+                    self.nuevo_correlativo_ventas=(int(datos)+1)
+                    
+            #se aplican cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            messagebox.showerror('Correlativo Ventas','Ocurrio un error')
+    def guardar_ventas(self):
+
+        #try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor() 
+
+            datos_ventas=self.nuevo_correlativo_ventas,self.fecha_venta_contado,self.hora_venta_contado,self.cod_usu,self.nom_usu,'1','CONSUMIDOR FINAL',self.total,'Emitido','Contado'
+            miCursor.execute("INSERT INTO Ventas VALUES(?,?,?,?,?,?,?,?,?,?)",(datos_ventas))
+            messagebox.showinfo('Guardando Venta',"Registro Agregado Correctamente")
+            #se aplican cambios
+            miConexion.commit()
+            self.frame_contado.destroy()
+            self.ventana_lista_productos()
+            #Se cierra la conexion
+            miConexion.close()
+
+        #except:
+             #Mensaje si ocurre algun error
+            #messagebox.showerror("Guardndo Venta", "Ocurrio un error")
+    
+
+
+
+
+
+#==========================ELIMINAR FRAMES================================
+    def borrar_frames(self):
+        for frames in self.frame_center.winfo_children():
+            frames.destroy()
+        self.frame_busqueda_detalle_venta.grid_forget()    
 
 def main():
     app=Ventana()
