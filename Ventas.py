@@ -750,8 +750,7 @@ class Ventana(tb.Window):
         self.lblframe_botones_detalle_venta=tb.LabelFrame(self.frame_detalle_venta)
         self.lblframe_botones_detalle_venta.grid(row=0,column=0,sticky=NSEW)
 
-        btn_detalle=tb.Button(self.lblframe_botones_detalle_venta,text='Detalle',width=12
-                                    )
+        btn_detalle=tb.Button(self.lblframe_botones_detalle_venta,text='Detalle',width=12,command=self.ventana_listado_ventas)
         btn_detalle.grid(row=0,column=0,padx=5)
 
         btn_cantidad=tb.Button(self.lblframe_botones_detalle_venta,text='Cantidad',width=12,command=self.ventana_modificar_cantidad)
@@ -885,12 +884,14 @@ class Ventana(tb.Window):
             if datos_producto_seleccionado!=None:
                 for row in datos_producto_seleccionado:
                     self.datos_guardar_producto_detalle_venta=(int(self.nuevo_correlativo_ventas),row[0],row[1],row[3],row[4],'1',row[5],'0')
-            self.mostrar_productos_detalle_venta 
-            self.agregar_producto_detalle_venta()
+            
             
 
             miConexion.commit()
-            #Se cierra la conexion
+
+            self.mostrar_productos_detalle_venta() 
+            self.agregar_producto_detalle_venta()
+
             miConexion.close()
 
         except:
@@ -930,9 +931,9 @@ class Ventana(tb.Window):
             #Se consulta la base de datos
             miCursor.execute("SELECT * FROM DetalleVentaT")
             #Con esto se traen todos los registros y se guardan en "datos"
-            datos_productos_detalle_venta=miCursor.fetchall()
+            self.datos_productos_detalle_venta=miCursor.fetchall()
             #Se recorre cada fila encontrada
-            for row in datos_productos_detalle_venta:
+            for row in self.datos_productos_detalle_venta:
                 #Calcular el subtotal y la existencia
 
                 subtotal=float(row[4]*row[5])
@@ -1295,7 +1296,7 @@ class Ventana(tb.Window):
             messagebox.showerror('Correlativo Ventas','Ocurrio un error')
     def guardar_ventas(self):
 
-        #try:
+        try:
             #Se establece la conexion
             miConexion=sqlite3.connect('Ventas.db')
             #Se crea el cursor
@@ -1303,19 +1304,220 @@ class Ventana(tb.Window):
 
             datos_ventas=self.nuevo_correlativo_ventas,self.fecha_venta_contado,self.hora_venta_contado,self.cod_usu,self.nom_usu,'1','CONSUMIDOR FINAL',self.total,'Emitido','Contado'
             miCursor.execute("INSERT INTO Ventas VALUES(?,?,?,?,?,?,?,?,?,?)",(datos_ventas))
-            messagebox.showinfo('Guardando Venta',"Registro Agregado Correctamente")
             #se aplican cambios
             miConexion.commit()
+            messagebox.showinfo('Guardando Venta',"Venta agregada correctamente")
+            self.guardar_detalle_ventas()
+            self.eliminar_detalle_ventaT()
             self.frame_contado.destroy()
-            self.ventana_lista_productos()
+            self.ventana_detalle_ventas()
             #Se cierra la conexion
             miConexion.close()
 
-        #except:
+        except:
              #Mensaje si ocurre algun error
-            #messagebox.showerror("Guardndo Venta", "Ocurrio un error")
-    
+            messagebox.showerror("Guardndo Venta", "Ocurrio un error")
+    def guardar_detalle_ventas(self):
+        self.mostrar_productos_detalle_venta()
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
 
+            datos_detalle_venta=self.datos_productos_detalle_venta
+            for elementos in datos_detalle_venta:  
+
+                miCursor.execute("INSERT INTO DetalleVenta VALUES(?,?,?,?,?,?,?,?)",(elementos))
+            #se aplican cambios
+            miConexion.commit()
+            self.actualizar_stock()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Guardando Productos Detalle Venta", "Ocurrio un error al Agregar el Producto")
+    def eliminar_detalle_ventaT(self):
+            try:
+                    miConexion = sqlite3.connect('Ventas.db')
+                    miCursor = miConexion.cursor()
+                    miCursor.execute("DELETE FROM DetalleVentaT")
+
+                    miConexion.commit()
+                    miConexion.close()
+            except:
+                messagebox.showerror('Eliminando Detalle VentaT','Ocurrió un error')
+    def actualizar_stock(self):
+        self.mostrar_productos_detalle_venta()
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+
+            datos_stock=self.datos_productos_detalle_venta
+            for row in datos_stock:  
+                codigo=str(row[1])
+                cantidad=str(row[5])
+
+                miCursor.execute("UPDATE Productos SET Stock=Stock-? WHERE Codigo= ?",(cantidad,codigo))
+            #se aplican cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Actualizando Stock", "Ocurrio un error al Agregar el Producto")
+    def ventana_listado_ventas(self):
+        self.borrar_frames()
+
+        self.frame_listado_venta=Frame(self.frame_center)
+        self.frame_listado_venta.grid(row=0,column=1,sticky=NSEW)
+
+        lblframe_busqueda_listado_venta=tb.LabelFrame(self.frame_listado_venta)
+        lblframe_busqueda_listado_venta.grid(row=0,column=0,sticky=NSEW)
+
+        lbl_fecha_listado_venta=tb.Label(lblframe_busqueda_listado_venta,bootstyle='info',text='Ventas de Fecha:',font=('Calibri',14))
+        lbl_fecha_listado_venta.grid(row=0,column=1,padx=5,pady=5)
+        self.ent_fecha_listado_venta=tb.DateEntry(lblframe_busqueda_listado_venta)
+        self.ent_fecha_listado_venta.grid(row=0,column=1,padx=5,pady=5)
+        btn_buscar_venta_fecha=tb.Button(lblframe_busqueda_listado_venta,text='Buscar',width=20,bootstyle='success',command=self.mostrar_listado_ventas)
+        btn_buscar_venta_fecha.grid(row=0,column=2,padx=5,pady=10)
+
+        lblframe_titulo_listado_venta=tb.LabelFrame(self.frame_listado_venta)
+        lblframe_titulo_listado_venta.grid(row=1,column=0,sticky=NSEW)
+        lbl_titulo_listado_venta=tb.Label(lblframe_titulo_listado_venta,bootstyle='dark',text='LISTA DE VENTAS DEL DIA DE JOTTA`S STORE',font=('Calibri',14))
+        lbl_titulo_listado_venta.grid(row=0,column=0)
+
+        #============================Treeview==============================
+        lblframe_tree_listado_venta=tb.LabelFrame(self.frame_listado_venta)
+        lblframe_tree_listado_venta.grid(row=2,column=0,sticky=NSEW)
+
+        columnas=("no","fecha","hora","codusu","usuario","codcli","cliente","monto","estado","tipo")
+
+        self.tree_listado_venta=tb.Treeview(lblframe_tree_listado_venta,height=30,columns=columnas,show='headings',bootstyle='dark')
+        self.tree_listado_venta.grid(row=0,column=0)
+
+        self.tree_listado_venta.heading("no",text="No",anchor=W)
+        self.tree_listado_venta.heading("fecha",text="Fecha",anchor=W)
+        self.tree_listado_venta.heading("hora",text="Hora",anchor=W)
+        self.tree_listado_venta.heading("codusu",text="Codigo Usuario",anchor=W)
+        self.tree_listado_venta.heading("usuario",text="Usuario",anchor=W)
+        self.tree_listado_venta.heading("codcli",text="Codigo Cliente",anchor=W)
+        self.tree_listado_venta.heading("cliente",text="Cliente",anchor=W)
+        self.tree_listado_venta.heading("monto",text="Monto",anchor=W)
+        self.tree_listado_venta.heading("estado",text="Estado",anchor=W)
+        self.tree_listado_venta.heading("tipo",text="Tipo",anchor=W)
+
+        self.tree_listado_venta['displaycolumns']=("no","fecha","hora","cliente","monto","tipo")
+
+        self.tree_listado_venta.column("no",width=50)
+        self.tree_listado_venta.column("fecha",width=100)
+        self.tree_listado_venta.column("hora",width=100)
+        self.tree_listado_venta.column("cliente",width=200)
+        self.tree_listado_venta.column("monto",width=75)
+        self.tree_listado_venta.column("tipo",width=75)
+
+        tree_croll=tb.Scrollbar(self.frame_listado_venta,bootstyle='succes-round')
+        tree_croll.grid(row=2,column=2,pady=10)
+
+        tree_croll.config(command=self.tree_listado_venta.yview)
+
+        #total de ventas del dia
+        self.lbl_total_listado_venta=tb.Label(self.frame_listado_venta,font=('Calibri',24),justify=RIGHT)
+        self.lbl_total_listado_venta.grid(row=3,column=0,sticky=E)
+
+        #=======================LISTADO DETALLE DE VENTAS============================
+
+        lblframe_datos_detalle_venta=tb.LabelFrame(self.frame_listado_venta)
+        lblframe_datos_detalle_venta.grid(row=0,column=3,sticky=NSEW)
+
+        lbl_numero=tb.Label(lblframe_datos_detalle_venta,text='Venta:',bootstyle='info',font=('Calibri',14))
+        lbl_numero.grid(row=0,column=0,padx=5,pady=5)
+        self.lbl_no_venta=Label(lblframe_datos_detalle_venta,text='')
+        self.lbl_no_venta.grid(row=0,column=1,padx=5,pady=5,sticky=W)
+
+        lbl_cliente=tb.Label(lblframe_datos_detalle_venta,text='Cliente:',bootstyle='info',font=('Calibri',14))
+        lbl_cliente.grid(row=1,column=0,padx=5,pady=5)
+        self.lbl_cliente_venta=Label(lblframe_datos_detalle_venta,text='')
+        self.lbl_cliente_venta.grid(row=1,column=1,padx=5,pady=5,sticky=W)
+
+        lblframe_botones_listado_detalle_venta=tb.LabelFrame(self.frame_listado_venta)
+        lblframe_botones_listado_detalle_venta.grid(row=1,column=1,sticky=NSEW)
+
+        self.btn_devolucion_contado=tb.Button(lblframe_botones_listado_detalle_venta,text='Devolucion',width=30,bootstyle='danger')
+        self.btn_devolucion_contado.grid(row=0,column=0,padx=5,pady=2)
+        self.btn_imprimir_venta=tb.Button(lblframe_botones_listado_detalle_venta,text='Imprimir Venta',width=30,bootstyle='info')
+        self.btn_imprimir_venta.grid(row=0,column=1,padx=5,pady=2)
+
+        lblframe_tree_listado_detalle_venta=tb.LabelFrame(self.frame_listado_venta)
+        lblframe_tree_listado_detalle_venta.grid(row=2,column=1,sticky=NSEW)
+
+        columnas=("no","codigo","nombre","costo","precio","cantidad","stock","descuento","subtotal")
+
+        self.tree_listado_detalle_venta=tb.Treeview(lblframe_tree_listado_detalle_venta,height=30,columns=columnas,show='headings',bootstyle='dark')
+        self.tree_listado_detalle_venta.grid(row=0,column=0)
+
+        self.tree_listado_detalle_venta.heading('no',text='No',anchor=W)
+        self.tree_listado_detalle_venta.heading('codigo',text='Codigo',anchor=W)
+        self.tree_listado_detalle_venta.heading('nombre',text='Nombre',anchor=W)
+        self.tree_listado_detalle_venta.heading('costo',text='Costo',anchor=W)
+        self.tree_listado_detalle_venta.heading('precio',text='Precio',anchor=W)
+        self.tree_listado_detalle_venta.heading('cantidad',text='Cantidad',anchor=W)
+        self.tree_listado_detalle_venta.heading('stock',text='Stocl',anchor=W)
+        self.tree_listado_detalle_venta.heading('descuento',text='Descuento',anchor=W)
+        self.tree_listado_detalle_venta.heading('subtotal',text='Subtotal',anchor=W)
+
+        self.tree_listado_detalle_venta['displaycolumns']=('codigo','nombre','precio','cantidad','subtotal')
+
+        self.tree_listado_detalle_venta.column('codidgo',width=75)
+        self.tree_listado_detalle_venta.column('nombre',width=200)
+        self.tree_listado_detalle_venta.column('precio',width=75)
+        self.tree_listado_detalle_venta.column('cantidad',width=75)
+        self.tree_listado_detalle_venta.column('subtotal',width=75)
+
+        tree_croll_detalle=tb.Scrollbar(self.frame_listado_venta,bootstyle='succes-round')
+        tree_croll_detalle.grid(row=2,column=4,pady=10)
+
+        tree_croll_detalle.config(command=self.tree_listado_detalle_venta.yview)
+
+        self.lbl_total_listado_detalle_venta=tb.Label(self.frame_listado_venta,font=('Calibri',24))
+        self.lbl_total_listado_detalle_venta.grid(row=3,column=3,sticky=E)
+        self.mostrar_listado_ventas()
+    def mostrar_listado_ventas(self):
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            #Se limpia el treeview
+            registros=self.tree_listado_venta.get_children()
+            #Se recorre cada regristro
+            for elementos in registros:
+                self.tree_listado_venta.delete(elementos)
+
+            patron=self.ent_fecha_listado_venta.entry.get()
+            #Se consulta la base de datos
+            miCursor.execute("SELECT * FROM Ventas WHERE Fecha LIKE ?",('%'+patron+'%',) )
+            #Con esto se traen todos los registros y se guardan en "datos"
+            datos_listado_ventas=miCursor.fetchall()
+            print(datos_listado_ventas)
+            #Se recorre cada fila encontrada
+            for row in datos_listado_ventas:
+                #Se llena el treeview
+                self.tree_listado_venta.insert('',0,text=row[0],values=(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9]))
+            #se aplicand cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+
+        except Exception as e:
+            print("Error:", e)
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Busqueda de productos", "Ocurrio un error al buscar en la lista de productos")
 
 
 
