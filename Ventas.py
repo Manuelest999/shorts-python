@@ -649,7 +649,7 @@ class Ventana(tb.Window):
 
            lbl_codigo_modificar_producto=Label(lblframe_modificar_producto,text='Codigo')
            lbl_codigo_modificar_producto.grid(row=0,column=0,padx=10,pady=10)
-           self.txt_codigo_modificar_producto=Entry(lblframe_modificar_producto,width=40,state='readonly')
+           self.txt_codigo_modificar_producto=Entry(lblframe_modificar_producto,width=40)#state='readonly'
            self.txt_codigo_modificar_producto.grid(row=0,column=1,padx=10,pady=10)
 
            lbl_nombre_modificar_producto=Label(lblframe_modificar_producto,text='Nombre')
@@ -712,8 +712,8 @@ class Ventana(tb.Window):
         self.txt_talla_modificar_producto.insert(0,self.val_mod_prod[6])
         self.txt_fechaderecepcion_modificar_producto.insert(0,self.val_mod_prod[7])
     def modificar_producto(self):
-        #Valida que no queden vacios los campos
-       if self.txt_codigo_modificar_producto.get()=="" or self.txt_nombre_modificar_producto.get()=="" or self.txt_proveedor_modificar_producto.get()=="" or self.txt_precio_modificar_producto.get()=="" or self.txt_stock_modificar_producto.get()=="" or self.txt_talla_modificar_producto.get()=="" or self.txt_fechaderecepcion_modificar_producto.get()=="":
+        #Valida que no queden vacios los campos self.txt_codigo_modificar_producto.get()==""
+       if  self.txt_codigo_modificar_producto.get()=="" or self.txt_nombre_modificar_producto.get()=="" or self.txt_proveedor_modificar_producto.get()=="" or self.txt_precio_modificar_producto.get()=="" or self.txt_stock_modificar_producto.get()=="" or self.txt_talla_modificar_producto.get()=="" or self.txt_fechaderecepcion_modificar_producto.get()=="":
             messagebox.showwarning("Modificando Producto","Algun campo no es valido, por favor revise")
             return
         #Capturador de errores
@@ -1379,16 +1379,16 @@ class Ventana(tb.Window):
         lblframe_busqueda_listado_venta=tb.LabelFrame(self.frame_listado_venta)
         lblframe_busqueda_listado_venta.grid(row=0,column=0,sticky=NSEW)
 
-        lbl_fecha_listado_venta=tb.Label(lblframe_busqueda_listado_venta,bootstyle='info',text='Ventas de Fecha:',font=('Calibri',14))
+        lbl_fecha_listado_venta=tb.Label(lblframe_busqueda_listado_venta,bootstyle='dark',text='Ventas de Fecha:',font=('Calibri',14))
         lbl_fecha_listado_venta.grid(row=0,column=1,padx=5,pady=5)
         self.ent_fecha_listado_venta=tb.DateEntry(lblframe_busqueda_listado_venta)
-        self.ent_fecha_listado_venta.grid(row=0,column=1,padx=5,pady=5)
+        self.ent_fecha_listado_venta.grid(row=0,column=2,padx=5,pady=5)
         btn_buscar_venta_fecha=tb.Button(lblframe_busqueda_listado_venta,text='Buscar',width=20,bootstyle='success',command=self.mostrar_listado_ventas)
-        btn_buscar_venta_fecha.grid(row=0,column=2,padx=5,pady=10)
+        btn_buscar_venta_fecha.grid(row=0,column=3,padx=5,pady=10)
 
         lblframe_titulo_listado_venta=tb.LabelFrame(self.frame_listado_venta)
         lblframe_titulo_listado_venta.grid(row=1,column=0,sticky=NSEW)
-        lbl_titulo_listado_venta=tb.Label(lblframe_titulo_listado_venta,bootstyle='dark',text='LISTA DE VENTAS DEL DIA DE JOTTA`S STORE',font=('Calibri',14))
+        lbl_titulo_listado_venta=tb.Label(lblframe_titulo_listado_venta,bootstyle='dark',text='LISTA DE VENTAS DEL DIA DE JOTTA`S STORE',font=('Calibri',16))
         lbl_titulo_listado_venta.grid(row=0,column=0)
 
         #============================Treeview==============================
@@ -1421,7 +1421,7 @@ class Ventana(tb.Window):
         self.tree_listado_venta.column("tipo",width=75)
 
         tree_croll=tb.Scrollbar(self.frame_listado_venta,bootstyle='succes-round')
-        tree_croll.grid(row=2,column=2,pady=10)
+        tree_croll.grid(row=2,column=1,pady=10)
 
         tree_croll.config(command=self.tree_listado_venta.yview)
 
@@ -1429,17 +1429,19 @@ class Ventana(tb.Window):
         self.lbl_total_listado_venta=tb.Label(self.frame_listado_venta,font=('Calibri',24),justify=RIGHT)
         self.lbl_total_listado_venta.grid(row=3,column=0,sticky=E)
 
+        self.tree_listado_venta.bind('<<TreeviewSelect>>',self.venta_seleccionada)
+
         #=======================LISTADO DETALLE DE VENTAS============================
 
         lblframe_datos_detalle_venta=tb.LabelFrame(self.frame_listado_venta)
-        lblframe_datos_detalle_venta.grid(row=0,column=3,sticky=NSEW)
+        lblframe_datos_detalle_venta.grid(row=0,column=1,sticky=NSEW)
 
-        lbl_numero=tb.Label(lblframe_datos_detalle_venta,text='Venta:',bootstyle='info',font=('Calibri',14))
+        lbl_numero=tb.Label(lblframe_datos_detalle_venta,text='Venta:',bootstyle='info',font=('Calibri',16))
         lbl_numero.grid(row=0,column=0,padx=5,pady=5)
         self.lbl_no_venta=Label(lblframe_datos_detalle_venta,text='')
         self.lbl_no_venta.grid(row=0,column=1,padx=5,pady=5,sticky=W)
 
-        lbl_cliente=tb.Label(lblframe_datos_detalle_venta,text='Cliente:',bootstyle='info',font=('Calibri',14))
+        lbl_cliente=tb.Label(lblframe_datos_detalle_venta,text='Cliente:',bootstyle='info',font=('Calibri',16))
         lbl_cliente.grid(row=1,column=0,padx=5,pady=5)
         self.lbl_cliente_venta=Label(lblframe_datos_detalle_venta,text='')
         self.lbl_cliente_venta.grid(row=1,column=1,padx=5,pady=5,sticky=W)
@@ -1447,8 +1449,8 @@ class Ventana(tb.Window):
         lblframe_botones_listado_detalle_venta=tb.LabelFrame(self.frame_listado_venta)
         lblframe_botones_listado_detalle_venta.grid(row=1,column=1,sticky=NSEW)
 
-        self.btn_devolucion_contado=tb.Button(lblframe_botones_listado_detalle_venta,text='Devolucion',width=30,bootstyle='danger')
-        self.btn_devolucion_contado.grid(row=0,column=0,padx=5,pady=2)
+        #self.btn_devolucion_contado=tb.Button(lblframe_botones_listado_detalle_venta,text='Devolucion',width=30,bootstyle='danger')
+        #self.btn_devolucion_contado.grid(row=0,column=0,padx=5,pady=2)
         self.btn_imprimir_venta=tb.Button(lblframe_botones_listado_detalle_venta,text='Imprimir Venta',width=30,bootstyle='info')
         self.btn_imprimir_venta.grid(row=0,column=1,padx=5,pady=2)
 
@@ -1472,14 +1474,14 @@ class Ventana(tb.Window):
 
         self.tree_listado_detalle_venta['displaycolumns']=('codigo','nombre','precio','cantidad','subtotal')
 
-        self.tree_listado_detalle_venta.column('codidgo',width=75)
-        self.tree_listado_detalle_venta.column('nombre',width=200)
-        self.tree_listado_detalle_venta.column('precio',width=75)
-        self.tree_listado_detalle_venta.column('cantidad',width=75)
-        self.tree_listado_detalle_venta.column('subtotal',width=75)
+        self.tree_listado_detalle_venta.column('codigo',width=100)
+        self.tree_listado_detalle_venta.column('nombre',width=250)
+        self.tree_listado_detalle_venta.column('precio',width=100)
+        self.tree_listado_detalle_venta.column('cantidad',width=100)
+        self.tree_listado_detalle_venta.column('subtotal',width=100)
 
-        tree_croll_detalle=tb.Scrollbar(self.frame_listado_venta,bootstyle='succes-round')
-        tree_croll_detalle.grid(row=2,column=4,pady=10)
+        tree_croll_detalle=tb.Scrollbar(self.frame_listado_venta,bootstyle='success-round')
+        tree_croll_detalle.grid(row=2,column=3,pady=10)
 
         tree_croll_detalle.config(command=self.tree_listado_detalle_venta.yview)
 
@@ -1487,6 +1489,7 @@ class Ventana(tb.Window):
         self.lbl_total_listado_detalle_venta.grid(row=3,column=3,sticky=E)
         self.mostrar_listado_ventas()
     def mostrar_listado_ventas(self):
+        self.limpiar_listado_detalle_ventas()
         #Capturador de errores
         try:
             #Se establece la conexion
@@ -1504,7 +1507,6 @@ class Ventana(tb.Window):
             miCursor.execute("SELECT * FROM Ventas WHERE Fecha LIKE ?",('%'+patron+'%',) )
             #Con esto se traen todos los registros y se guardan en "datos"
             datos_listado_ventas=miCursor.fetchall()
-            print(datos_listado_ventas)
             #Se recorre cada fila encontrada
             for row in datos_listado_ventas:
                 #Se llena el treeview
@@ -1513,13 +1515,66 @@ class Ventana(tb.Window):
             miConexion.commit()
             #Se cierra la conexion
             miConexion.close()
+            self.total_listado_venta()
 
-        except Exception as e:
-            print("Error:", e)
+        except:
             #Mensaje si ocurre algun error
             messagebox.showerror("Busqueda de productos", "Ocurrio un error al buscar en la lista de productos")
+    def total_listado_venta(self):
+        self.total_lista_ventas=0
+        for row in self.tree_listado_venta.get_children():
+            self.total_lista_ventas+=float(self.tree_listado_venta.item(row,'values')[7])
 
+        self.lbl_total_listado_venta.config(text=f'${self.total_lista_ventas:,.2f}')
+    def venta_seleccionada(self,event):
+        venta_seleccionada=self.tree_listado_venta.focus()
+        self.valor_venta_seleccionada=self.tree_listado_venta.item(venta_seleccionada,'values')
+        if self.valor_venta_seleccionada!="":
+            self.lbl_no_venta.config(text=self.valor_venta_seleccionada[0])
+            self.lbl_cliente_venta.config(text=self.valor_venta_seleccionada[6])
+            self.mostrar_listado_detalle_venta()
+    def mostrar_listado_detalle_venta(self):
+        #Capturador de errores
+        try:
+            #Se establece la conexion
+            miConexion=sqlite3.connect('Ventas.db')
+            #Se crea el cursor
+            miCursor=miConexion.cursor()
+            #Se limpia el treeview
+            registros=self.tree_listado_detalle_venta.get_children()
+            #Se recorre cada regristro
+            for elementos in registros:
+                self.tree_listado_detalle_venta.delete(elementos)
+            #Se consulta la base de datos
+            miCursor.execute("SELECT * FROM DetalleVenta WHERE No="+str(self.valor_venta_seleccionada[0]))
+            #Con esto se traen todos los registros y se guardan en "datos"
+            datos_listado_detalle_ventas=miCursor.fetchall()
+            #Se recorre cada fila encontrada
+            for row in datos_listado_detalle_ventas:
+                subtotal=float(row[4])*float(row[5])
+                self.tree_listado_detalle_venta.insert('',0,text=row[0],values=(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],subtotal))
+            #se aplicand cambios
+            miConexion.commit()
+            #Se cierra la conexion
+            miConexion.close()
+            self.total_listado_detalle_venta()
 
+        except:
+            #Mensaje si ocurre algun error
+            messagebox.showerror("Mostrar Listado Detalle Venta", "Ocurrio un error")
+    def total_listado_detalle_venta(self):
+        self.total_lista_detalle_ventas=0
+        for row in self.tree_listado_detalle_venta.get_children():
+            self.total_lista_detalle_ventas+=float(self.tree_listado_detalle_venta.item(row,'values')[8])
+
+        self.lbl_total_listado_detalle_venta.config(text=f'${self.total_lista_detalle_ventas:,.2f}')
+    def limpiar_listado_detalle_ventas(self):
+        self.lbl_no_venta.config(text='')
+        self.lbl_cliente_venta.config(text='')
+        self.lbl_total_listado_detalle_venta.config(text='$0,00')
+        datos=self.tree_listado_detalle_venta.get_children()
+        for filas in datos:
+            self.tree_listado_detalle_venta.delete(filas)
 
 
 #==========================ELIMINAR FRAMES================================
