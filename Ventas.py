@@ -1,9 +1,12 @@
 from tkinter import*
-from tkinter import ttk,messagebox
+from tkinter import ttk,messagebox,filedialog
 import ttkbootstrap as tb
 from ttkbootstrap.scrolled import ScrolledFrame
 import sqlite3
 from datetime import datetime
+from fpdf import FPDF
+from matplotlib import pyplot as plt
+
 
 class Ventana(tb.Window):
     def __init__(self):
@@ -39,23 +42,23 @@ class Ventana(tb.Window):
         
         self.ventana_busqueda_detalle_venta()
 
-        btn_productos=ttk.Button(self.frame_left,text='Productos',bootstyle='info',width=17,command=self.ventana_lista_productos)
+        btn_productos=ttk.Button(self.frame_left,text='Productos',bootstyle='info',width=20,command=self.ventana_lista_productos)
         btn_productos.grid(row=0,column=0,padx=10,pady=10)
-        btn_ventas=ttk.Button(self.frame_left,text='Ventas',bootstyle='info',width=17,command=self.ventana_detalle_ventas)
+        btn_ventas=ttk.Button(self.frame_left,text='Ventas',bootstyle='info',width=20,command=self.ventana_detalle_ventas)
         btn_ventas.grid(row=1,column=0,padx=10,pady=10)
-        btn_clientes=ttk.Button(self.frame_left,text='Clientes',bootstyle='info',width=17)
-        btn_clientes.grid(row=2,column=0,padx=10,pady=10)
+        #btn_clientes=ttk.Button(self.frame_left,text='Clientes',bootstyle='info',width=17)
+        #btn_clientes.grid(row=2,column=0,padx=10,pady=10)
         #btn_compras=ttk.Button(self.frame_left,text='Compras',bootstyle='info',width=15)
         #btn_compras.grid(row=3,column=0,padx=10,pady=10)
-        btn_usuarios=ttk.Button(self.frame_left,text='Usuarios',bootstyle='info',width=17,command=self.ventana_lista_usuarios)
+        btn_usuarios=ttk.Button(self.frame_left,text='Usuarios',bootstyle='info',width=20,command=self.ventana_lista_usuarios)
         btn_usuarios.grid(row=4,column=0,padx=10,pady=10)
-        #btn_reportes=ttk.Button(self.frame_left,text='Reportes',bootstyle='info',width=15)
-        #btn_reportes.grid(row=5,column=0,padx=10,pady=10)
+        btn_grafo=ttk.Button(self.frame_left,text='Grafo',bootstyle='info',width=15,command=self.diagrama_de_venn_ganancias)
+        btn_grafo.grid(row=5,column=0,padx=10,pady=10)
         #btn_backup=ttk.Button(self.frame_left,text='Backup',bootstyle='info',width=15)
         #btn_backup.grid(row=6,column=0,padx=10,pady=10)
-        #btn_restaurabd=ttk.Button(self.frame_left,text='Restaurar BD',bootstyle='info',width=15)
-        #btn_restaurabd.grid(row=7,column=0,padx=10,pady=10)
-
+        btn_generar_pdf = tb.Button (self.frame_left, text="Generar Reporte PDF", command=self.generar_pdf)
+        btn_generar_pdf.grid(row=6,column=0,padx=10,pady=10)
+        
         
         #lbl2=Label(self.frame_center)
         #lbl2.grid(row=0,column=0,padx=10,pady=10)
@@ -899,7 +902,7 @@ class Ventana(tb.Window):
             messagebox.showerror("Producto Seleccionado", "Ocurrio un error al buscar en la lista de productos")
     def agregar_producto_detalle_venta(self):
 
-        try:
+        #try:
             #Se establece la conexion
             miConexion=sqlite3.connect('Ventas.db')
             #Se crea el cursor
@@ -913,9 +916,9 @@ class Ventana(tb.Window):
             #Se cierra la conexion
             miConexion.close()
 
-        except:
+        #except:
              #Mensaje si ocurre algun error
-            messagebox.showerror("Agregando Productos Detalle Venta", "Ocurrio un error al Agregar el Producto")
+            #messagebox.showerror("Agregando Productos Detalle Venta", "Ocurrio un error al Agregar el Producto")
     def mostrar_productos_detalle_venta(self):
         #Capturador de errores
         try:
@@ -1575,6 +1578,120 @@ class Ventana(tb.Window):
         datos=self.tree_listado_detalle_venta.get_children()
         for filas in datos:
             self.tree_listado_detalle_venta.delete(filas)
+
+#===============================REPORTE====================================
+
+    # Función para generar el reporte en PDF
+    def generar_pdf(self):
+        # Conectar a la base de datos SQLite
+        conn = sqlite3.connect('Ventas.db')
+        cursor = conn.cursor()
+
+        # Consulta para obtener la ganancia total y cantidad total por producto
+        cursor.execute('SELECT Nombre, SUM((Precio - Costo) * Cantidad) AS GananciaTotal, SUM(Cantidad) AS CantidadTotal FROM DetalleVenta GROUP BY Nombre')
+        data = cursor.fetchall()
+
+        # Obtener datos de la tabla DetalleVenta
+        cursor.execute('SELECT "No", "Codigo", "Nombre", "Costo", "Precio", "Cantidad", "Stock", "Descuento", (Precio - Costo) * Cantidad AS Ganancia FROM DetalleVenta')
+        detalles_venta = cursor.fetchall()
+
+        # Cerrar la conexión a la base de datos
+        conn.close()
+
+        # Crear un nuevo PDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=16)  # Reducir el tamaño de fuente para los datos
+
+        pdf.image('imagenes/Imagen de WhatsApp 2024-06-20 a las 12.59.24_19ae026c.jpg', x=10, y=10, w=30)
+        pdf.set_xy(10, 20)  # Ajustar posición del título
+        pdf.cell(200, 10, txt="Reporte de Ventas Jotta's Store", ln=True, align='C')
+
+         # Ajustar posición de la tabla principal
+        y_position = 50  # Posición inicial de la tabla principal
+        pdf.set_xy(10, y_position)
+
+        # Cabecera de la tabla principal
+        pdf.set_font("Arial", size=8, style='B')  # Tamaño de fuente más pequeño para la cabecera
+        pdf.cell(10, 10, "No", border=1)
+        pdf.cell(20, 10, "Codigo", border=1)
+        pdf.cell(35, 10, "Nombre del Producto", border=1)
+        pdf.cell(20, 10, "Costo", border=1)
+        pdf.cell(20, 10, "Precio", border=1)
+        pdf.cell(20, 10, "Cantidad", border=1)
+        pdf.cell(20, 10, "Stock", border=1)
+        pdf.cell(20, 10, "Descuento", border=1)
+        pdf.cell(25, 10, "Ganancia", border=1)  # Nueva columna para mostrar la ganancia
+        pdf.ln()
+
+        # Restaurar la fuente regular para los datos
+        pdf.set_font("Arial", size=8)
+
+        # Agregar datos individuales de la tabla principal al PDF
+        for row in detalles_venta:
+            pdf.cell(10, 10, str(row[0]), border=1)
+            pdf.cell(20, 10, str(row[1]), border=1)
+            pdf.cell(35, 10, str(row[2]), border=1)  # Utilizar multi_cell para el nombre del producto
+            pdf.cell(20, 10, str(row[3]), border=1)
+            pdf.cell(20, 10, str(row[4]), border=1)
+            pdf.cell(20, 10, str(row[5]), border=1)
+            pdf.cell(20, 10, str(row[6]), border=1)
+            pdf.cell(20, 10, str(row[7]), border=1)
+            pdf.cell(25, 10, str(row[8]), border=1)  # Mostrar la ganancia calculada
+            pdf.ln()
+
+        pdf.ln(10)  # Espacio entre las tablas
+        y_position = pdf.get_y()  # Obtener la posición actual Y
+        pdf.set_xy(10, y_position)
+
+        # Cabecera para la tabla de ganancia total por producto
+        pdf.set_font("Arial", size=8, style='B')
+        pdf.cell(35, 10, "Nombre del Producto", border=1)
+        pdf.cell(35, 10, "Ganancia Total", border=1)
+        pdf.cell(25, 10, "Cantidad Total", border=1)
+        pdf.ln()
+
+        # Restaurar la fuente regular para los datos
+        pdf.set_font("Arial", size=8)
+
+        # Agregar datos de la tabla de ganancia total por producto al PDF
+        for row in data:
+            pdf.cell(35, 10, str(row[0]), border=1)
+            pdf.cell(35, 10, str(row[1]), border=1)
+            pdf.cell(25, 10, str(row[2]), border=1)
+            pdf.ln()
+
+        # Pedir al usuario que elija la ubicación y nombre del archivo PDF
+        file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+
+        # Guardar el PDF si se eligió un nombre de archivo
+        if file_path:
+            pdf_output = file_path
+            pdf.output(pdf_output)
+
+            # Mostrar mensaje de éxito
+            messagebox.showinfo("Éxito", f"Reporte generado correctamente: {pdf_output}")
+    def diagrama_de_venn_ganancias(self):
+
+        figure = plt.figure(figsize=(12, 12))
+        axis = figure.add_subplot(111)
+
+        plt.scatter(x = [0,0.25, 0.13], y = [0,0, -0.25], s = 75000, color = ['red', 'green', 'purple'], alpha = 0.3)
+
+        plt.text(x = -0.08, y = 0.14, s = "Productos mas vendidos", fontsize = 10, fontweight='bold', color='black')
+        plt.text(x = 0.18, y = 0.14, s = "Productos\nregularmente vendidos", fontsize = 10, fontweight='bold', color='black')
+        plt.text(x = 0.03, y = -0.375, s = "Productos menos vendidos", fontsize = 10, fontweight='bold', color='black')
+
+        plt.xlim(-0.40, 0.65)
+        plt.ylim(-0.4, 0.2)
+
+        plt.title("Diagrama de Venn reporte de ganancias", pad=20, fontsize=20, fontweight='bold')
+
+        plt.show()
+
+
+
+
 
 
 #==========================ELIMINAR FRAMES================================
