@@ -52,11 +52,11 @@ class Ventana(tb.Window):
         #btn_compras.grid(row=3,column=0,padx=10,pady=10)
         btn_usuarios=ttk.Button(self.frame_left,text='Usuarios',bootstyle='info',width=20,command=self.ventana_lista_usuarios)
         btn_usuarios.grid(row=4,column=0,padx=10,pady=10)
-        btn_grafo=ttk.Button(self.frame_left,text='Grafo',bootstyle='info',width=15,command=self.diagrama_de_venn_ganancias)
-        btn_grafo.grid(row=5,column=0,padx=10,pady=10)
+        #btn_grafo=ttk.Button(self.frame_left,text='Generar Grafo',bootstyle='info',width=20,command=self.diagrama_de_venn_ganancias)
+        #btn_grafo.grid(row=5,column=0,padx=10,pady=10)
         #btn_backup=ttk.Button(self.frame_left,text='Backup',bootstyle='info',width=15)
         #btn_backup.grid(row=6,column=0,padx=10,pady=10)
-        btn_generar_pdf = tb.Button (self.frame_left, text="Generar Reporte PDF", command=self.generar_pdf)
+        btn_generar_pdf = tb.Button (self.frame_left, text="Generar Reporte PDF",bootstyle='info',width=20, command=self.generar_pdf)
         btn_generar_pdf.grid(row=6,column=0,padx=10,pady=10)
         
         
@@ -874,7 +874,7 @@ class Ventana(tb.Window):
         self.producto_encontrado_detalle_venta('')
     def producto_seleccionado_detalle_venta(self):
         #Capturador de errores
-        try:
+        #try:
             #Se establece la conexion
             miConexion=sqlite3.connect('Ventas.db')
             #Se crea el cursor
@@ -897,9 +897,9 @@ class Ventana(tb.Window):
 
             miConexion.close()
 
-        except:
+        #except:
             #Mensaje si ocurre algun error
-            messagebox.showerror("Producto Seleccionado", "Ocurrio un error al buscar en la lista de productos")
+            #messagebox.showerror("Producto Seleccionado", "Ocurrio un error al buscar en la lista de productos")
     def agregar_producto_detalle_venta(self):
 
         #try:
@@ -913,6 +913,7 @@ class Ventana(tb.Window):
             miConexion.commit()
             self.frame_nuevo_producto.destroy()
             self.ventana_lista_productos()
+            self.mostrar_productos_detalle_venta()
             #Se cierra la conexion
             miConexion.close()
 
@@ -952,7 +953,7 @@ class Ventana(tb.Window):
             messagebox.showerror("Busqueda de productos detalle venta", "Ocurrio un error al buscar en la lista de productos")
     def producto_encontrado_detalle_venta(self,event):
         #Capturador de errores
-        try:
+        #try:
             #Se establece la conexion
             miConexion=sqlite3.connect('Ventas.db')
             #Se crea el cursor
@@ -991,9 +992,9 @@ class Ventana(tb.Window):
             #Se cierra la conexion
             miConexion.close()
 
-        except:
+        #except:
             #Mensaje si ocurre algun error
-            messagebox.showerror("Productos", "Producto no encontrado")
+            #messagebox.showerror("Productos", "Producto no encontrado")
     def sumar_uno_detalle_venta(self):
         try:
             #Se establece la conexion
@@ -1581,7 +1582,7 @@ class Ventana(tb.Window):
 
 #===============================REPORTE====================================
 
-    # Función para generar el reporte en PDF
+    
     def generar_pdf(self):
         # Conectar a la base de datos SQLite
         conn = sqlite3.connect('Ventas.db')
