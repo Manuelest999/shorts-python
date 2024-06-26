@@ -1672,8 +1672,7 @@ class Ventana(tb.Window):
             pdf.output(pdf_output)
 
             # Mostrar mensaje de éxito
-            messagebox.showinfo("Éxito", f"Reporte generado correctamente: {pdf_output}")
-    
+            messagebox.showinfo("Éxito", f"Reporte generado correctamente: {pdf_output}")   
     def crear_grafo_bipartito(self):
         # Conectar a la base de datos
         conn = sqlite3.connect('Ventas.db')
@@ -1716,11 +1715,11 @@ class Ventana(tb.Window):
         # Conectar nodos según los rangos
         for producto, ganancia in ganancias_productos:
             if producto in rangos['A']:
-                G.add_edge(producto, 'A')
+                G.add_edge(producto, 'A', weight=ganancia)
             elif producto in rangos['B']:
-                G.add_edge(producto, 'B')
+                G.add_edge(producto, 'B', weight=ganancia)
             elif producto in rangos['C']:
-                G.add_edge(producto, 'C')
+                G.add_edge(producto, 'C', weight=ganancia)
 
         # Layout del grafo bipartito
         pos = {}
@@ -1731,7 +1730,7 @@ class Ventana(tb.Window):
             pos[producto] = (1, y_productos - i*0.6)
 
         # Posiciones de los nodos de rangos
-        pos.update({'A': (3, 3), 'B': (3, 2), 'C': (3, 1)})
+        pos.update({'A': (3, 4), 'B': (3, 1.612), 'C': (3, -0.785)})
 
         # Dibujar el grafo
         plt.figure(figsize=(12, 8))
@@ -1750,14 +1749,42 @@ class Ventana(tb.Window):
         # Dibujar letras dentro de los círculos A, B, C
         nx.draw_networkx_labels(G, pos, labels={'A':'A', 'B':'B', 'C':'C'}, font_color='black', font_size=16, font_weight='bold')
 
-        # Dibujar aristas
-        nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
+        # Encontrar la arista con la mayor ganancia para A y B
+        max_ganancia_A = max([ganancia for producto, ganancia in ganancias_productos if producto in rangos['A']])
+        max_ganancia_B = max([ganancia for producto, ganancia in ganancias_productos if producto in rangos['B']])
+
+        # Encontrar la arista con la menor ganancia conectada a C
+        edges_to_C = [(u, v, d['weight']) for u, v, d in G.edges(data=True) if 'C' in (u, v)]
+        min_edge_to_C = min(edges_to_C, key=lambda x: x[2])
+
+        # Dibujar aristas y etiquetas de ganancias en las aristas
+        for u, v, d in G.edges(data=True):
+            ganancia = d['weight']
+            color = 'black'  # Color por defecto para otras aristas
+
+            if (u, v) == (min_edge_to_C[0], min_edge_to_C[1]):
+                color = 'red'  # Colorear la arista que tiene la menor ganancia conectada a C
+            elif ganancia == max_ganancia_A and v == 'A':
+                color = 'green'  # Colorear la arista con mayor ganancia conectada a A
+            elif ganancia == max_ganancia_B and v == 'B':
+                color = 'yellow'  # Colorear la arista con mayor ganancia conectada a B
+
+            # Dibujar arista
+            nx.draw_networkx_edges(G, pos, edgelist=[(u, v)], width=2.0, alpha=0.5, edge_color=color)
+
+            # Dibujar etiqueta de ganancia centrada en la arista con fondo blanco
+            x1, y1 = pos[u]
+            x2, y2 = pos[v]
+            label_pos = (x1 + x2) / 2, (y1 + y2) / 2
+            plt.text(label_pos[0], label_pos[1], f'{ganancia}', ha='center', va='center', bbox=dict(facecolor='white', edgecolor='none', pad=1))
 
         # Configuración adicional del gráfico
         plt.title('Grafo Bipartito de Ganancias Totales de los Productos', fontsize=16)
         plt.axis('off')
         plt.tight_layout()
         plt.show()
+
+
 
     
 
