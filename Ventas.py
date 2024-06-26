@@ -5,7 +5,8 @@ from ttkbootstrap.scrolled import ScrolledFrame
 import sqlite3
 from datetime import datetime
 from fpdf import FPDF
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+import networkx as nx
 
 
 class Ventana(tb.Window):
@@ -52,8 +53,8 @@ class Ventana(tb.Window):
         #btn_compras.grid(row=3,column=0,padx=10,pady=10)
         btn_usuarios=ttk.Button(self.frame_left,text='Usuarios',bootstyle='info',width=20,command=self.ventana_lista_usuarios)
         btn_usuarios.grid(row=4,column=0,padx=10,pady=10)
-        #btn_grafo=ttk.Button(self.frame_left,text='Generar Grafo',bootstyle='info',width=20,command=self.diagrama_de_venn_ganancias)
-        #btn_grafo.grid(row=5,column=0,padx=10,pady=10)
+        btn_grafo=ttk.Button(self.frame_left,text='Generar Grafo',bootstyle='info',width=20,command=self.crear_grafo_bipartito)
+        btn_grafo.grid(row=5,column=0,padx=10,pady=10)
         #btn_backup=ttk.Button(self.frame_left,text='Backup',bootstyle='info',width=15)
         #btn_backup.grid(row=6,column=0,padx=10,pady=10)
         btn_generar_pdf = tb.Button (self.frame_left, text="Generar Reporte PDF",bootstyle='info',width=20, command=self.generar_pdf)
@@ -1320,7 +1321,7 @@ class Ventana(tb.Window):
 
         except:
              #Mensaje si ocurre algun error
-            messagebox.showerror("Guardndo Venta", "Ocurrio un error")
+            messagebox.showerror("Guardando Venta", "Ocurrio un error")
     def guardar_detalle_ventas(self):
         self.mostrar_productos_detalle_venta()
         try:
@@ -1672,26 +1673,93 @@ class Ventana(tb.Window):
 
             # Mostrar mensaje de éxito
             messagebox.showinfo("Éxito", f"Reporte generado correctamente: {pdf_output}")
-    def diagrama_de_venn_ganancias(self):
+    
+    def crear_grafo_bipartito(self):
+        # Conectar a la base de datos
+        conn = sqlite3.connect('Ventas.db')
 
-        figure = plt.figure(figsize=(12, 12))
-        axis = figure.add_subplot(111)
+        # Calcular las ganancias por producto
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT Nombre, SUM((Precio - Costo) * Cantidad) AS GananciaTotal
+            FROM DetalleVenta
+            GROUP BY Nombre
+        """)
+        ganancias_productos = cursor.fetchall()
 
-        plt.scatter(x = [0,0.25, 0.13], y = [0,0, -0.25], s = 75000, color = ['red', 'green', 'purple'], alpha = 0.3)
+        # Cerrar la conexión a la base de datos
+        conn.close()
 
-        plt.text(x = -0.08, y = 0.14, s = "Productos mas vendidos", fontsize = 10, fontweight='bold', color='black')
-        plt.text(x = 0.18, y = 0.14, s = "Productos\nregularmente vendidos", fontsize = 10, fontweight='bold', color='black')
-        plt.text(x = 0.03, y = -0.375, s = "Productos menos vendidos", fontsize = 10, fontweight='bold', color='black')
+        # Definir los nuevos rangos de ganancia
+        rango_c = (1, 50)    # Ejemplo: ganancia entre 1 y 50
+        rango_b = (51, 99)   # Ejemplo: ganancia entre 51 y 99
+        rango_a = (100, float('inf'))  # Ejemplo: ganancia mayor o igual a 100
 
-        plt.xlim(-0.40, 0.65)
-        plt.ylim(-0.4, 0.2)
+        # Crear un objeto grafo bipartito
+        G = nx.Graph()
 
-        plt.title("Diagrama de Venn reporte de ganancias", pad=20, fontsize=20, fontweight='bold')
+        # Agregar nodos de productos y rangos
+        productos = [producto[0] for producto in ganancias_productos]
+        rangos = {'A': [], 'B': [], 'C': []}
 
+        for producto, ganancia in ganancias_productos:
+            if ganancia >= rango_a[0]:
+                rangos['A'].append(producto)
+            elif ganancia >= rango_b[0] and ganancia <= rango_b[1]:
+                rangos['B'].append(producto)
+            elif ganancia >= rango_c[0] and ganancia <= rango_c[1]:
+                rangos['C'].append(producto)
+
+        G.add_nodes_from(productos, bipartite=0)
+        G.add_nodes_from(['A', 'B', 'C'], bipartite=1)
+
+        # Conectar nodos según los rangos
+        for producto, ganancia in ganancias_productos:
+            if producto in rangos['A']:
+                G.add_edge(producto, 'A')
+            elif producto in rangos['B']:
+                G.add_edge(producto, 'B')
+            elif producto in rangos['C']:
+                G.add_edge(producto, 'C')
+
+        # Layout del grafo bipartito
+        pos = {}
+
+        # Posiciones de los nodos de productos
+        y_productos = 4.0
+        for i, producto in enumerate(productos):
+            pos[producto] = (1, y_productos - i*0.6)
+
+        # Posiciones de los nodos de rangos
+        pos.update({'A': (3, 3), 'B': (3, 2), 'C': (3, 1)})
+
+        # Dibujar el grafo
+        plt.figure(figsize=(12, 8))
+
+        # Dibujar nodos de productos y rangos
+        nx.draw_networkx_nodes(G, pos, nodelist=productos, node_color='b', node_size=1500, alpha=0.8)
+        nx.draw_networkx_nodes(G, pos, nodelist=['A'], node_color='green', node_size=2000, alpha=0.8)
+        nx.draw_networkx_nodes(G, pos, nodelist=['B'], node_color='yellow', node_size=2000, alpha=0.8)
+        nx.draw_networkx_nodes(G, pos, nodelist=['C'], node_color='red', node_size=2000, alpha=0.8)
+
+        # Dibujar etiquetas de nodos arriba de cada círculo de productos
+        for node, (x, y) in pos.items():
+            if node in productos:
+                plt.text(x, y + 0.3, node, ha='center', va='center')
+
+        # Dibujar letras dentro de los círculos A, B, C
+        nx.draw_networkx_labels(G, pos, labels={'A':'A', 'B':'B', 'C':'C'}, font_color='black', font_size=16, font_weight='bold')
+
+        # Dibujar aristas
+        nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
+
+        # Configuración adicional del gráfico
+        plt.title('Grafo Bipartito de Ganancias Totales de los Productos', fontsize=16)
+        plt.axis('off')
+        plt.tight_layout()
         plt.show()
 
-
-
+    
 
 
 
